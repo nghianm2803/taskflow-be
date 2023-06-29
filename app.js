@@ -5,9 +5,9 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const cors = require("cors");
-const { sendResponse, AppError } = require("./helpers/utils.js");
+const { sendResponse, AppError } = require("./src/helpers/utils.js");
 
-const indexRouter = require("./routes/index");
+const indexRouter = require("./src/routes/index");
 
 const app = express();
 
