@@ -65,7 +65,9 @@ authController.sendInvitation = catchAsync(async (req, res, next) => {
 
 authController.joinSquad = catchAsync(async (req, res, next) => {
   const { token } = req.query;
-  let { name, email, password } = req.body;
+
+  // let { name, email, password } = req.body;
+
 
   // Validate the invitation token
   // You can implement your own validation logic here
@@ -82,7 +84,6 @@ authController.joinSquad = catchAsync(async (req, res, next) => {
 
   // Create a new user account
   const newUser = new User({
-    name,
     email,
     password: password,
     role: "Employee",
