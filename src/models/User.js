@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const jwt = require("jsonwebtoken");
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
+const crypto = require("crypto");
 
 //Create schema
 const UserSchema = Schema(
@@ -36,6 +37,12 @@ UserSchema.methods.generateToken = async function () {
     expiresIn: "1d",
   });
   return accessToken;
+};
+
+UserSchema.statics.generateInvitationToken = function () {
+  const buffer = crypto.randomBytes(32);
+  const invitationToken = buffer.toString('hex');
+  return invitationToken;
 };
 
 //Create and export model
