@@ -43,4 +43,12 @@ router.get("/invitation", authController.joinSquad);
  * @description Login with google
  * @access Public
  */
+
+/**
+ * @route POST /auth/logout
+ * @description Logout
+ * @access Public
+ */
+router.post("/logout", authController.logout);
+
 module.exports = router;

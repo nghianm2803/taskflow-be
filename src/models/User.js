@@ -18,6 +18,7 @@ const UserSchema = Schema(
     },
     avatar: { type: String, required: false, default: "" },
     isDeleted: { type: Boolean, default: false, required: true },
+    tokens: [{ type: Object }],
     // tasksList: [{ type: mongoose.SchemaTypes.ObjectId, ref: "Task" }],
   },
   {
@@ -41,7 +42,7 @@ UserSchema.methods.generateToken = async function () {
 
 UserSchema.statics.generateInvitationToken = function () {
   const buffer = crypto.randomBytes(32);
-  const invitationToken = buffer.toString('hex');
+  const invitationToken = buffer.toString("hex");
   return invitationToken;
 };
 

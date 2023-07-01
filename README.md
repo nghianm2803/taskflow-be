@@ -27,7 +27,7 @@ With TaskFlow, managing tasks becomes a breeze. Its user-friendly interface requ
 
 ### User Authentication
 - [ ] Manager can create an account and log in/ out of the manager’s app
-- [ ] Team members cannot register by themselves, but need manager’s email invitation to set up their account.
+- [x] Team members cannot register by themselves, but need manager’s email invitation to set up their account.
 - [ ] After initial setup, team members can login/out of the app using their credentials
 
 ### Task Management
@@ -46,4 +46,4 @@ With TaskFlow, managing tasks becomes a breeze. Its user-friendly interface requ
 
 ### Reminder & Notification
 - [ ] Manager can receive email and/or in app notification about task status update by team member
-- [ ] Team member can receive receive email and/or in app notification about changes made by their manager to their tasks 
+- [ ] Team member can receive receive email and/or in app notification about changes made by their manager to their tasks
