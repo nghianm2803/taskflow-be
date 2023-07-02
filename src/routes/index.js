@@ -14,4 +14,8 @@ router.use("/auth", authApi);
 const userApi = require("./user.api");
 router.use("/users", userApi);
 
+/* Project API */
+const projectApi = require("./project.api");
+router.use("/project", projectApi);
+
 module.exports = router;

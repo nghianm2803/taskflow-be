@@ -26,16 +26,16 @@ With TaskFlow, managing tasks becomes a breeze. Its user-friendly interface requ
 ![ERD TASKFLOW](ERD%20TASKFLOW.svg)
 
 ### User Authentication
-- [ ] Manager can create an account and log in/ out of the manager’s app
+- [x] Manager can create an account and log in/ out of the manager’s app
 - [x] Team members cannot register by themselves, but need manager’s email invitation to set up their account.
-- [ ] After initial setup, team members can login/out of the app using their credentials
+- [x] After initial setup, team members can login/out of the app using their credentials
 
 ### Task Management
 - [ ] Manager can create a project with title, description, and add tasks to it
 - [ ] Manager can create new tasks by entering a title, description, and selecting a project or category.
 - [ ] Manager can view projects, tasks in different views (by project, by assignee, by status,…)
 - [ ] Manager can assign tasks to themselves or to team members by selecting from a list of users
-- [ ] Manager can  add priority, deadline to the task
+- [ ] Manager can add priority, deadline to the task
 - [ ] Team member can view all their assigned tasks in one place
 - [ ] Team member can assign task to themselves if the created task doesn’t have an assignee
 - [ ] Team member can update the status of their assigned task as they progress

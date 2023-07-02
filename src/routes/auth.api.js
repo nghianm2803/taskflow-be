@@ -44,11 +44,4 @@ router.get("/invitation", authController.joinSquad);
  * @access Public
  */
 
-/**
- * @route POST /auth/logout
- * @description Logout
- * @access Public
- */
-router.post("/logout", authController.logout);
-
 module.exports = router;

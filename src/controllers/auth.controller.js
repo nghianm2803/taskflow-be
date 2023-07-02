@@ -19,22 +19,6 @@ authController.loginWithEmail = catchAsync(async (req, res, next) => {
   if (!isMatch) return next(new AppError(400, "Wrong password", "Login Error"));
 
   accessToken = await user.generateToken();
-
-  let oldTokens = user.tokens || [];
-
-  if (oldTokens.length) {
-    oldTokens = oldTokens.filter((t) => {
-      const timeDiff = (Date.now() - parseInt(t.signedAt)) / 1000;
-      if (timeDiff < 86400) {
-        return t;
-      }
-    });
-  }
-
-  await User.findByIdAndUpdate(user._id, {
-    tokens: [...oldTokens, { accessToken, signedAt: Date.now().toString() }],
-  });
-
   return sendResponse(res, 200, true, { user, accessToken }, null, "Login successful");
 });
 
@@ -112,26 +96,6 @@ authController.joinSquad = catchAsync(async (req, res, next) => {
     success: true,
     message: "Registration successful",
     data: newUser,
-  });
-});
-
-authController.logout = catchAsync(async (req, res, next) => {
-  if (req.headers && req.headers.authorization) {
-    const accessToken = req.headers.authorization.split(" ")[1];
-
-    if (!accessToken) return next(new AppError(400, "Authorization fail!", "Logout Error"));
-
-    const tokens = req.user.tokens;
-
-    const newTokens = tokens.filter((t) => t.accessToken !== accessToken);
-
-    await User.findByIdAndUpdate(req.user._id, { tokens: newTokens });
-  }
-
-  // Return a success response indicating successful logout
-  return res.status(200).json({
-    success: true,
-    message: "Logout successful",
   });
 });
 

@@ -18,7 +18,6 @@ const UserSchema = Schema(
     },
     avatar: { type: String, required: false, default: "" },
     isDeleted: { type: Boolean, default: false, required: true },
-    tokens: [{ type: Object }],
     // tasksList: [{ type: mongoose.SchemaTypes.ObjectId, ref: "Task" }],
   },
   {
