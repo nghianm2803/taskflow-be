@@ -15,10 +15,7 @@ router.post(
   "/",
   validators.validate([
     body("name", "Invalid name").exists().notEmpty(),
-    body("email", "Invalid email")
-      .exists()
-      .isEmail()
-      .normalizeEmail({ gmail_remove_dots: false }),
+    body("email", "Invalid email").exists().isEmail().normalizeEmail({ gmail_remove_dots: false }),
     body("password", "Invalid password").exists().notEmpty(),
   ]),
   userController.register
@@ -46,9 +43,7 @@ router.get("/", authMiddleware.loginRequired, userController.getUsers);
 router.get(
   "/:id",
   authMiddleware.loginRequired,
-  validators.validate([
-    param("id").exists().isString().custom(validators.checkObjectId),
-  ]),
+  validators.validate([param("id").exists().isString().custom(validators.checkObjectId)]),
   userController.getSingleUser
 );
 
@@ -60,12 +55,8 @@ router.get(
 router.put(
   "/:id",
   authMiddleware.loginRequired,
-  validators.validate([
-    param("id").exists().isString().custom(validators.checkObjectId),
-  ]),
+  validators.validate([param("id").exists().isString().custom(validators.checkObjectId)]),
   userController.updateProfile
 );
-
-// router.get("/test", userController.test);
 
 module.exports = router;
