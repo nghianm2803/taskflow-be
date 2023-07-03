@@ -51,9 +51,11 @@ taskController.getTasks = catchAsync(async (req, res, next) => {
   // Extract the task names from the populated assignTo field
   taskList = taskList.map((task) => {
     const projectTo = task.projectTo;
+    const assignTo = task.assignTo;
     return {
       ...task.toJSON(),
       projectTo: projectTo ? projectTo.name : "",
+      assignTo: assignTo ? assignTo.name : "",
     };
   });
 
@@ -63,13 +65,15 @@ taskController.getTasks = catchAsync(async (req, res, next) => {
 // Get a task by id
 taskController.getTask = catchAsync(async (req, res, next) => {
   const taskId = req.params.taskId;
-  const detailTask = await Task.findOne({ _id: taskId }).populate("projectTo");
+  const detailTask = await Task.findOne({ _id: taskId }).populate("projectTo").populate("assignTo");
 
   // Extract the username from the populated projectTo field
   const projectTo = detailTask.projectTo;
+  const assignTo = detailTask.assignTo;
   const modifiedTask = {
     ...detailTask.toJSON(),
     projectTo: projectTo ? projectTo.name : "",
+    assignTo: assignTo ? assignTo.name : "",
   };
 
   return sendResponse(res, 200, true, modifiedTask, null, "Get Task Info Successfully!");
@@ -91,9 +95,39 @@ taskController.createTask = catchAsync(async (req, res, next) => {
 });
 
 // Add a task to a project
-taskController.projects = catchAsync(async (req, res, next) => {
+// taskController.projects = catchAsync(async (req, res, next) => {
+//   const taskId = req.params.taskId;
+//   const projectId = req.params.projectId;
+
+//   // Find the task by taskId
+//   const task = await Task.findById(taskId);
+//   if (!task) {
+//     throw new AppError(404, "Not Found", "Task not found");
+//   }
+
+//   // Find the project by projectId
+//   const project = await Project.findById(projectId);
+//   console.log(project);
+//   if (!project) {
+//     throw new AppError(404, "Not Found", "Project not found");
+//   }
+//   // Assign the task to the project
+//   task.projectTo = projectId;
+//   await task.save();
+
+//   // Add the task ID to the project's tasksList
+//   if (!project.tasksList) {
+//     project.tasksList = []; // Initialize tasksList if not already defined
+//   }
+//   project.tasksList.push(taskId);
+//   await project.save();
+//   return sendResponse(res, 200, true, null, "Task added to project successfully");
+// });
+
+// Assign task to user
+taskController.assignTask = async (req, res, next) => {
   const taskId = req.params.taskId;
-  const projectId = req.params.projectId;
+  const userId = req.params.userId;
 
   // Find the task by taskId
   const task = await Task.findById(taskId);
@@ -101,70 +135,36 @@ taskController.projects = catchAsync(async (req, res, next) => {
     throw new AppError(404, "Not Found", "Task not found");
   }
 
-  // Find the project by projectId
-  const project = await Project.findById(projectId);
-  console.log(project);
-  if (!project) {
-    throw new AppError(404, "Not Found", "Project not found");
+  // Find the user by userId
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(404, "Not Found", "User not found");
   }
-  // Assign the task to the project
-  task.projectTo = projectId;
-  await task.save();
 
-  // Add the task ID to the project's tasksList
-  if (!project.tasksList) {
-    project.tasksList = []; // Initialize tasksList if not already defined
+  // Assign or unassign the task
+  if (task.assignTo && task.assignTo.equals(userId)) {
+    // Unassign the task
+    task.assignTo = null;
+    const updatedTask = await task.save();
+
+    // Remove the task ID from the user's tasksList
+    const taskIndex = user.tasksList.indexOf(updatedTask._id.toString());
+    if (taskIndex !== -1) {
+      user.tasksList.splice(taskIndex, 1);
+    }
+    await user.save();
+
+    return sendResponse(res, 200, true, null, "Task unassigned successfully");
+  } else {
+    // Assign the task
+    task.assignTo = userId;
+    const updatedTask = await task.save();
+    user.tasksList.push(updatedTask._id.toString());
+    await user.save();
+
+    return sendResponse(res, 200, true, null, "Task assigned successfully");
   }
-  project.tasksList.push(taskId);
-  await project.save();
-  return sendResponse(res, 200, true, null, "Task added to project successfully");
-});
-
-// Assign task to user
-// taskController.assignTask = async (req, res, next) => {
-//   const taskId = req.params.id;
-//   const { userId } = req.body;
-
-//   try {
-//     // Find the task by taskId
-//     const task = await Task.findById(taskId);
-//     if (!task) {
-//       throw new AppError(404, "Not Found", "Task not found");
-//     }
-
-//     // Find the user by userId
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       throw new AppError(404, "Not Found", "User not found");
-//     }
-
-//     // Assign or unassign the task
-//     if (task.assignTo && task.assignTo.equals(userId)) {
-//       // Unassign the task
-//       task.assignTo = null;
-//       const updatedTask = await task.save();
-
-//       // Remove the task ID from the user's tasksList
-//       const taskIndex = user.tasksList.indexOf(updatedTask._id.toString());
-//       if (taskIndex !== -1) {
-//         user.tasksList.splice(taskIndex, 1);
-//       }
-//       await user.save();
-
-//       sendResponse(res, 200, true, null, "Task unassigned successfully");
-//     } else {
-//       // Assign the task
-//       task.assignTo = userId;
-//       const updatedTask = await task.save();
-//       user.tasksList.push(updatedTask._id.toString());
-//       await user.save();
-
-//       sendResponse(res, 200, true, null, "Task assigned successfully");
-//     }
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+};
 
 // Update a task by id
 // taskController.editTask = async (req, res, next) => {

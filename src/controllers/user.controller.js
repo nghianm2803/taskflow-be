@@ -39,7 +39,13 @@ userController.getUsers = catchAsync(async (req, res, next) => {
   const totalPages = Math.ceil(count / limit);
   const offset = limit * (page - 1);
 
-  let users = await User.find(filterCrireria).sort({ createdAt: -1 }).skip(offset).limit(limit);
+  let users = await User.find(filterCrireria).sort({ createdAt: -1 }).skip(offset).limit(limit).populate("tasksList");
+
+  // Extract the task names from the populated tasksList field
+  users = users.map((user) => {
+    const tasks = user.tasksList.map((task) => task.name);
+    return { ...user.toJSON(), tasksList: tasks };
+  });
 
   return sendResponse(res, 200, true, { users, totalPages, count }, null, "");
 });
@@ -47,19 +53,35 @@ userController.getUsers = catchAsync(async (req, res, next) => {
 userController.getCurrentUser = catchAsync(async (req, res, next) => {
   const userId = req.userId;
 
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).populate("tasksList");
   if (!user) throw new AppError(400, "User not found", "Get Current User Error");
 
-  return sendResponse(res, 200, true, user, null, "Get current user successful");
+  // Extract the string representation of ObjectIds in tasksList
+  const taskAssigned = user.tasksList.map((task) => task.name);
+
+  const modifiedUser = {
+    ...user.toJSON(),
+    tasksList: taskAssigned,
+  };
+
+  return sendResponse(res, 200, true, modifiedUser, null, "Get current user successful");
 });
 
 userController.getSingleUser = catchAsync(async (req, res, next) => {
   const userId = req.params.id;
 
-  let user = await User.findById(userId);
+  let user = await User.findById(userId).populate("tasksList");
   if (!user) throw new AppError(404, "User not found", "Get Single User Error");
 
-  return sendResponse(res, 200, true, user, null, "");
+  // Extract the string representation of ObjectIds in tasksList
+  const taskAssigned = user.tasksList.map((task) => task.name);
+
+  const modifiedUser = {
+    ...user.toJSON(),
+    tasksList: taskAssigned,
+  };
+
+  return sendResponse(res, 200, true, modifiedUser, null, "");
 });
 
 userController.updateProfile = catchAsync(async (req, res, next) => {

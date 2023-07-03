@@ -67,25 +67,12 @@ router.post(
  * @access Login required
  * @requiredBody: userId
  */
-// router.put(
-//   "/:taskId/user/:userId",
-//   validators.validate([param("taskId").exists().isString().custom(validators.checkObjectId)]),
-//   validators.validate([param("userId").exists().isString().custom(validators.checkObjectId)]),
-//   authMiddleware.loginRequired,
-//   taskController.assignTask
-// );
-
-/**
- * @route PUT api/tasks/:taskId/project/:projectId
- * @description Add task to a project
- * @access Manager
- */
 router.put(
-  "/:taskId/project/:projectId",
+  "/:taskId/user/:userId",
   validators.validate([param("taskId").exists().isString().custom(validators.checkObjectId)]),
-  validators.validate([param("projectId").exists().isString().custom(validators.checkObjectId)]),
-  permission.managerCheck,
-  taskController.projects
+  validators.validate([param("userId").exists().isString().custom(validators.checkObjectId)]),
+  authMiddleware.loginRequired,
+  taskController.assignTask
 );
 
 module.exports = router;

@@ -67,4 +67,18 @@ router.delete(
   projectController.deleteProject
 );
 
+/**
+ * @route PUT api/project/:projectId/task/:taskId
+ * @description Add task to a project
+ * @access Manager
+ */
+router.put(
+  "/:projectId/task/:taskId",
+  validators.validate([param("projectId").exists().isString().custom(validators.checkObjectId)]),
+  validators.validate([param("taskId").exists().isString().custom(validators.checkObjectId)]),
+  authMiddleware.loginRequired,
+  permission.managerCheck,
+  projectController.addTask
+);
+
 module.exports = router;
