@@ -49,17 +49,34 @@ router.post(
 /**
  * @route PUT api/tasks
  * @description Update a task by id
- * @access public
- * @requiredBody: name
+ * @access Login required
  */
-// router.put("/:taskId",  validators.validate([param("taskId").exists().isString().custom(validators.checkObjectId)]), editTask);
+router.put(
+  "/:taskId",
+  validators.validate([
+    body("status")
+      .notEmpty()
+      .withMessage("Status is empty")
+      .isIn(["Pending", "Working", "Review", "Done"])
+      .withMessage("Status must be Pending, Working, Review or Done"),
+    param("taskId").exists().isString().custom(validators.checkObjectId),
+  ]),
+  authMiddleware.loginRequired,
+  taskController.editTask
+);
 
 /**
  * @route DELETE api/tasks
  * @description Delete a task by id
  * @access private, manager
  */
-// router.delete("/:taskId",  validators.validate([param("taskId").exists().isString().custom(validators.checkObjectId)]), deleteTask);
+router.delete(
+  "/:taskId",
+  validators.validate([param("taskId").exists().isString().custom(validators.checkObjectId)]),
+  authMiddleware.loginRequired,
+  permission.managerCheck,
+  taskController.deleteTask
+);
 
 /**
  * @route PUT api/tasks/:taskId/assign
@@ -73,6 +90,19 @@ router.put(
   validators.validate([param("userId").exists().isString().custom(validators.checkObjectId)]),
   authMiddleware.loginRequired,
   taskController.assignTask
+);
+
+/**
+ * @route PUT api/tasks/:taskId/project/:projectId
+ * @description Add or remove a task to project
+ * @access Login required
+ */
+router.put(
+  "/:taskId/project/:projectId",
+  validators.validate([param("taskId").exists().isString().custom(validators.checkObjectId)]),
+  validators.validate([param("projectId").exists().isString().custom(validators.checkObjectId)]),
+  authMiddleware.loginRequired,
+  taskController.projects
 );
 
 module.exports = router;

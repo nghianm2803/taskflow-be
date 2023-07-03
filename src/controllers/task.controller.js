@@ -95,37 +95,37 @@ taskController.createTask = catchAsync(async (req, res, next) => {
 });
 
 // Add a task to a project
-// taskController.projects = catchAsync(async (req, res, next) => {
-//   const taskId = req.params.taskId;
-//   const projectId = req.params.projectId;
+taskController.projects = catchAsync(async (req, res, next) => {
+  const taskId = req.params.taskId;
+  const projectId = req.params.projectId;
 
-//   // Find the task by taskId
-//   const task = await Task.findById(taskId);
-//   if (!task) {
-//     throw new AppError(404, "Not Found", "Task not found");
-//   }
+  // Find the task by taskId
+  const task = await Task.findById(taskId);
+  if (!task) {
+    throw new AppError(404, "Not Found", "Task not found");
+  }
 
-//   // Find the project by projectId
-//   const project = await Project.findById(projectId);
-//   console.log(project);
-//   if (!project) {
-//     throw new AppError(404, "Not Found", "Project not found");
-//   }
-//   // Assign the task to the project
-//   task.projectTo = projectId;
-//   await task.save();
+  // Find the project by projectId
+  const project = await Project.findById(projectId);
+  console.log(project);
+  if (!project) {
+    throw new AppError(404, "Not Found", "Project not found");
+  }
+  // Assign the task to the project
+  task.projectTo = projectId;
+  await task.save();
 
-//   // Add the task ID to the project's tasksList
-//   if (!project.tasksList) {
-//     project.tasksList = []; // Initialize tasksList if not already defined
-//   }
-//   project.tasksList.push(taskId);
-//   await project.save();
-//   return sendResponse(res, 200, true, null, "Task added to project successfully");
-// });
+  // Add the task ID to the project's tasksList
+  if (!project.tasksList) {
+    project.tasksList = []; // Initialize tasksList if not already defined
+  }
+  project.tasksList.push(taskId);
+  await project.save();
+  return sendResponse(res, 200, true, null, "Task added to project successfully");
+});
 
 // Assign task to user
-taskController.assignTask = async (req, res, next) => {
+taskController.assignTask = catchAsync(async (req, res, next) => {
   const taskId = req.params.taskId;
   const userId = req.params.userId;
 
@@ -164,83 +164,41 @@ taskController.assignTask = async (req, res, next) => {
 
     return sendResponse(res, 200, true, null, "Task assigned successfully");
   }
-};
+});
 
 // Update a task by id
-// taskController.editTask = async (req, res, next) => {
-//   try {
-//     const taskId = req.params.id;
-//     const updateTask = req.body;
+taskController.editTask = catchAsync(async (req, res, next) => {
+  const taskId = req.params.taskId;
+  const updateTask = req.body;
 
-//     await Promise.all([
-//       body("status")
-//         .notEmpty()
-//         .withMessage("Status is empty")
-//         .isIn(["Pending", "Working", "Review", "Done", "Archive"])
-//         .withMessage("Status must be Pending, Working, Review, Done or Archive")
-//         .run(req),
-//       body("name")
-//         .optional()
-//         .custom(async (value) => {
-//           if (value) {
-//             const existingTask = await Task.findOne({ name: value });
-//             if (existingTask) {
-//               throw new Error("Task name already exists");
-//             }
-//           }
-//         })
-//         .run(req),
-//     ]);
+  // Find the task by taskId
+  const task = await Task.findById(taskId);
+  if (!task) {
+    throw new AppError(404, "Not Found", "Task not found");
+  }
 
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       const errorMessages = errors.array().map((error) => error.msg);
-//       throw new AppError(400, "Bad Request", errorMessages.join(", "));
-//     }
+  // Check if the status change is valid
+  if (task.status === "Done") {
+    throw new AppError(400, "Invalid status change. The 'Done' status cannot be changed", "Update Task Error");
+  }
 
-//     // Retrieve the existing task
-//     const existingTask = await Task.findById(taskId);
-//     if (!existingTask) {
-//       throw new AppError(404, "Not Found", "Task not found");
-//     }
-
-//     // Check if the status change is valid
-//     if (existingTask.status === "Done" && updateTask.status !== "Archive") {
-//       throw new AppError(
-//         400,
-//         "Bad Request",
-//         "Invalid status change. The 'Done' status cannot be changed except to 'Archive'."
-//       );
-//     }
-
-//     if (existingTask.status === "Archive" && updateTask.status !== "Archive") {
-//       throw new AppError(400, "Bad Request", "Invalid status change. The 'Archive' status cannot be changed.");
-//     }
-
-//     // Options modify query return data after update
-//     const options = { new: true };
-//     const updated = await Task.findByIdAndUpdate(taskId, updateTask, options);
-//     sendResponse(res, 200, true, updated, null, "Update task success");
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+  // Options modify query return data after update
+  const options = { new: true };
+  const updated = await Task.findByIdAndUpdate(taskId, updateTask, options);
+  return sendResponse(res, 200, true, updated, null, "Update Task success");
+});
 
 // Delete a task by id
-// taskController.deleteTask = async (req, res, next) => {
-//   try {
-//     const taskId = req.params.id;
+taskController.deleteTask = catchAsync(async (req, res, next) => {
+  const taskId = req.params.taskId;
 
-//     const softDeleteTask = await Task.findByIdAndUpdate(taskId, { isDeleted: true }, { new: true });
+  const softDeleteTask = await Task.findByIdAndUpdate(taskId, { isDeleted: true }, { new: true });
 
-//     if (!softDeleteTask) {
-//       throw new AppError(404, "Not Found", "Task not found");
-//     }
+  if (!softDeleteTask) {
+    throw new AppError(404, "Task not found", "Delete Task Error");
+  }
 
-//     sendResponse(res, 200, true, softDeleteTask, null, "Soft delete task success");
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+  return sendResponse(res, 200, true, softDeleteTask, null, "Soft delete task success");
+});
 
 module.exports = taskController;
