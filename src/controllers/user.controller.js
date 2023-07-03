@@ -19,14 +19,7 @@ userController.register = catchAsync(async (req, res, next) => {
   const accessToken = await user.generateToken();
 
   // Response
-  sendResponse(
-    res,
-    200,
-    true,
-    { user, accessToken },
-    null,
-    "Create User Successful"
-  );
+  sendResponse(res, 200, true, { user, accessToken }, null, "Create User Successful");
 });
 
 userController.getUsers = catchAsync(async (req, res, next) => {
@@ -40,18 +33,13 @@ userController.getUsers = catchAsync(async (req, res, next) => {
       ["name"]: { $regex: filter.name, $options: "i" },
     });
   }
-  const filterCrireria = filterConditions.length
-    ? { $and: filterConditions }
-    : {};
+  const filterCrireria = filterConditions.length ? { $and: filterConditions } : {};
 
   const count = await User.countDocuments(filterCrireria);
   const totalPages = Math.ceil(count / limit);
   const offset = limit * (page - 1);
 
-  let users = await User.find(filterCrireria)
-    .sort({ createdAt: -1 })
-    .skip(offset)
-    .limit(limit);
+  let users = await User.find(filterCrireria).sort({ createdAt: -1 }).skip(offset).limit(limit);
 
   return sendResponse(res, 200, true, { users, totalPages, count }, null, "");
 });
@@ -60,17 +48,9 @@ userController.getCurrentUser = catchAsync(async (req, res, next) => {
   const userId = req.userId;
 
   const user = await User.findById(userId);
-  if (!user)
-    throw new AppError(400, "User not found", "Get Current User Error");
+  if (!user) throw new AppError(400, "User not found", "Get Current User Error");
 
-  return sendResponse(
-    res,
-    200,
-    true,
-    user,
-    null,
-    "Get current user successful"
-  );
+  return sendResponse(res, 200, true, user, null, "Get current user successful");
 });
 
 userController.getSingleUser = catchAsync(async (req, res, next) => {
@@ -85,30 +65,30 @@ userController.getSingleUser = catchAsync(async (req, res, next) => {
 userController.updateProfile = catchAsync(async (req, res, next) => {
   const currentUserId = req.userId;
   const userId = req.params.id;
+  let { password } = req.body;
 
-  if (currentUserId !== userId)
-    throw new AppError(400, "Permission required", "Update User Error");
+  // console.log("Compare:", currentUserId, "vs", userId);
+  if (currentUserId !== userId) throw new AppError(400, "Permission required", "Update User Error");
 
   const user = await User.findById(userId);
-  if (!user)
-    throw new AppError(404, "Account not found", "Update Profile Error");
+  if (!user) throw new AppError(404, "Account not found", "Update Profile Error");
 
-  const allows = ["name", "password", "avatar"];
+  const allows = ["name", "password", "avatar", "role"];
+
   allows.forEach((field) => {
     if (req.body[field] !== undefined) {
-      user[field] = req.body[field];
+      if (field === "password") {
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync(password, salt);
+        user[field] = hashedPassword;
+      } else {
+        user[field] = req.body[field];
+      }
     }
   });
 
   await user.save();
-  return sendResponse(
-    res,
-    200,
-    true,
-    user,
-    null,
-    "Update Profile successfully"
-  );
+  return sendResponse(res, 200, true, user, null, "Update Profile successfully");
 });
 
 module.exports = userController;

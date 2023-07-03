@@ -16,7 +16,9 @@ authMiddleware.loginRequired = (req, res, next) => {
           return next(new AppError(401, "Token is invalid", "Validation Error"));
         }
       }
+      // console.log("Token Payload:", payload); // Include _id and role
       req.userId = payload._id;
+      req.permission = payload.role;
     });
     next();
   } catch (error) {

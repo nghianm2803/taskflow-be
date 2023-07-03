@@ -16,11 +16,53 @@ projectController.createProject = catchAsync(async (req, res, next) => {
   return sendResponse(res, 200, true, { project }, null, "Create Project Successful");
 });
 
-// projectController.getProjects = catchAsync(async (req, res, next) => {});
+projectController.getProjects = catchAsync(async (req, res, next) => {
+  let { page, limit, ...filter } = { ...req.query };
 
-// projectController.getSingleProject = catchAsync(async (req, res, next) => {});
+  page = parseInt(page) || 1;
+  limit = parseInt(limit) || 10;
+  const filterConditions = [{ isDeleted: false }];
+  if (filter.name) {
+    filterConditions.push({
+      ["name"]: { $regex: filter.name, $options: "i" },
+    });
+  }
+  const filterCrireria = filterConditions.length ? { $and: filterConditions } : {};
 
-// projectController.updateProject = catchAsync(async (req, res, next) => {});
+  const count = await Project.countDocuments(filterCrireria);
+  const totalPages = Math.ceil(count / limit);
+  const offset = limit * (page - 1);
+
+  let projects = await Project.find(filterCrireria).sort({ createdAt: -1 }).skip(offset).limit(limit);
+
+  return sendResponse(res, 200, true, { projects, totalPages, count }, null, "");
+});
+
+projectController.getSingleProject = catchAsync(async (req, res, next) => {
+  const projectId = req.params.projectId;
+
+  let project = await Project.findById(projectId);
+  if (!project) throw new AppError(404, "Project not found", "Get Single Project Error");
+
+  return sendResponse(res, 200, true, project, null, "");
+});
+
+projectController.updateProject = catchAsync(async (req, res, next) => {
+  const projectId = req.params.projectId;
+
+  const project = await Project.findById(projectId);
+  if (!project) throw new AppError(404, "Project not found", "Update Project Error");
+
+  const allows = ["name", "description"];
+  allows.forEach((field) => {
+    if (req.body[field] !== undefined) {
+      project[field] = req.body[field];
+    }
+  });
+
+  await project.save();
+  return sendResponse(res, 200, true, project, null, "Update Project successfully");
+});
 
 // projectController.deleteProject = catchAsync(async (req, res, next) => {});
 
