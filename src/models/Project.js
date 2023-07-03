@@ -5,20 +5,8 @@ const ProjectSchema = Schema(
   {
     name: { type: String, require: true },
     description: { type: String, require: true },
-    tasks: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Task",
-        default: null,
-      },
-    ],
-    comments: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Comment",
-        default: null,
-      },
-    ],
+    tasksList: [{ type: mongoose.SchemaTypes.ObjectId, ref: "Task" }],
+    comments: [{ type: Schema.Types.ObjectId, ref: "Comment", default: null }],
     isDeleted: { type: Boolean, default: false, required: true },
   },
   {

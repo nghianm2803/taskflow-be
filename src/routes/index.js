@@ -18,4 +18,8 @@ router.use("/users", userApi);
 const projectApi = require("./project.api");
 router.use("/project", projectApi);
 
+/* Task API */
+const taskApi = require("./task.api");
+router.use("/task", taskApi);
+
 module.exports = router;

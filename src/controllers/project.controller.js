@@ -33,7 +33,17 @@ projectController.getProjects = catchAsync(async (req, res, next) => {
   const totalPages = Math.ceil(count / limit);
   const offset = limit * (page - 1);
 
-  let projects = await Project.find(filterCrireria).sort({ createdAt: -1 }).skip(offset).limit(limit);
+  let projects = await Project.find(filterCrireria)
+    .sort({ createdAt: -1 })
+    .skip(offset)
+    .limit(limit)
+    .populate("tasksList");
+
+  // Extract the task names from the populated tasksList field
+  projects = projects.map((project) => {
+    const tasks = project.tasksList.map((task) => task.name);
+    return { ...project.toJSON(), tasksList: tasks };
+  });
 
   return sendResponse(res, 200, true, { projects, totalPages, count }, null, "");
 });
@@ -41,10 +51,18 @@ projectController.getProjects = catchAsync(async (req, res, next) => {
 projectController.getSingleProject = catchAsync(async (req, res, next) => {
   const projectId = req.params.projectId;
 
-  let project = await Project.findById(projectId);
+  let project = await Project.findById(projectId).populate("tasksList");
   if (!project) throw new AppError(404, "Project not found", "Get Single Project Error");
 
-  return sendResponse(res, 200, true, project, null, "");
+  // Extract the string representation of ObjectIds in tasksList
+  const taskName = project.tasksList.map((task) => task.name);
+
+  const modifiedProject = {
+    ...project.toJSON(),
+    tasksList: taskName,
+  };
+
+  return sendResponse(res, 200, true, modifiedProject, null, "");
 });
 
 projectController.updateProject = catchAsync(async (req, res, next) => {
@@ -64,6 +82,16 @@ projectController.updateProject = catchAsync(async (req, res, next) => {
   return sendResponse(res, 200, true, project, null, "Update Project successfully");
 });
 
-// projectController.deleteProject = catchAsync(async (req, res, next) => {});
+projectController.deleteProject = catchAsync(async (req, res, next) => {
+  const projectId = req.params.projectId;
+
+  const softDeleteProject = await Project.findByIdAndUpdate(projectId, { isDeleted: true }, { new: true });
+
+  if (!softDeleteProject) {
+    throw new AppError(404, "Not Found", "Project not found");
+  }
+
+  sendResponse(res, 200, true, softDeleteProject, null, "Soft delete project success");
+});
 
 module.exports = projectController;

@@ -59,12 +59,12 @@ router.put(
  * @description  Manager remove a project
  * @access Manager
  */
-// router.delete(
-//   "/:projectId",
-//   authMiddleware.loginRequired,
-//   permission.managerCheck,
-//   validators.validate([param("projectId").exists().isString().custom(validators.checkObjectId)]),
-//   projectController.deleteProject
-// );
+router.delete(
+  "/:projectId",
+  authMiddleware.loginRequired,
+  permission.managerCheck,
+  validators.validate([param("projectId").exists().isString().custom(validators.checkObjectId)]),
+  projectController.deleteProject
+);
 
 module.exports = router;
