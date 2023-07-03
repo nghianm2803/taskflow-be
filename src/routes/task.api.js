@@ -59,6 +59,7 @@ router.put(
       .withMessage("Status is empty")
       .isIn(["Pending", "Working", "Review", "Done"])
       .withMessage("Status must be Pending, Working, Review or Done"),
+    body("priority").optional().isIn(["Low", "Medium", "High"]).withMessage("Priority must be Low, Medium or High"),
     param("taskId").exists().isString().custom(validators.checkObjectId),
   ]),
   authMiddleware.loginRequired,
