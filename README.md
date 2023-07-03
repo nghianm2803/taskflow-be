@@ -37,11 +37,11 @@ With TaskFlow, managing tasks becomes a breeze. Its user-friendly interface requ
 - [x] Manager can assign tasks to themselves or to team members by selecting from a list of users
 - [x] Manager can add priority, deadline to the task
 - [x] Team member can view all their assigned tasks in one place
-- [ ] Team member can assign task to themselves if the created task doesn’t have an assignee
-- [ ] Team member can update the status of their assigned task as they progress
+- [x] Team member can assign task to themselves if the created task doesn’t have an assignee
+- [x] Team member can update the status of their assigned task as they progress
 
 ### Team Collaboration
-- [ ] Team member can view other members’ tasks
+- [x] Team member can view other members’ tasks
 - [ ] Team member and manager can leave comments on other members tasks
 
 ### Reminder & Notification

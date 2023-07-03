@@ -22,4 +22,8 @@ router.use("/project", projectApi);
 const taskApi = require("./task.api");
 router.use("/task", taskApi);
 
+/* Comment API */
+const commentApi = require("./comment.api");
+router.use("/comment", commentApi);
+
 module.exports = router;

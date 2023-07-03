@@ -30,7 +30,7 @@ router.get("/me", authMiddleware.loginRequired, userController.getCurrentUser);
 
 /**
  * @route GET /users?page=1&limit=10
- * @description Get users with pagination
+ * @description Get list of users with pagination
  * @access Login required
  */
 router.get("/", authMiddleware.loginRequired, userController.getUsers);
