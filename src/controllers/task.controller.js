@@ -128,6 +128,8 @@ taskController.projects = catchAsync(async (req, res, next) => {
 taskController.assignTask = catchAsync(async (req, res, next) => {
   const taskId = req.params.taskId;
   const userId = req.params.userId;
+  const loggedInUserId = req.userId;
+  const loggedInUserRole = req.permission;
 
   // Find the task by taskId
   const task = await Task.findById(taskId);
@@ -141,22 +143,40 @@ taskController.assignTask = catchAsync(async (req, res, next) => {
     throw new AppError(404, "Not Found", "User not found");
   }
 
-  // Assign or unassign the task
-  if (task.assignTo && task.assignTo.equals(userId)) {
-    // Unassign the task
-    task.assignTo = null;
-    const updatedTask = await task.save();
+  if (loggedInUserRole === "Manager") {
+    // Manager can assign or unassign task
+    if (task.assignTo && task.assignTo.equals(userId)) {
+      // Unassign the task
+      task.assignTo = null;
+      const updatedTask = await task.save();
 
-    // Remove the task ID from the user's tasksList
-    const taskIndex = user.tasksList.indexOf(updatedTask._id.toString());
-    if (taskIndex !== -1) {
-      user.tasksList.splice(taskIndex, 1);
+      // Remove the task ID from the user's tasksList
+      const taskIndex = user.tasksList.indexOf(updatedTask._id.toString());
+      if (taskIndex !== -1) {
+        user.tasksList.splice(taskIndex, 1);
+      }
+      await user.save();
+
+      return sendResponse(res, 200, true, null, "Task unassigned successfully");
+    } else {
+      // Assign the task
+      task.assignTo = userId;
+      const updatedTask = await task.save();
+      user.tasksList.push(updatedTask._id.toString());
+      await user.save();
+
+      return sendResponse(res, 200, true, null, "Task assigned successfully");
     }
-    await user.save();
+  } else if (loggedInUserRole === "Employee") {
+    // Employee can only assign task to themselves if task is unassigned
+    if (task.assignTo) {
+      throw new AppError(403, "Permission not allowed to assign task to others", "Assigne Task Error");
+    }
 
-    return sendResponse(res, 200, true, null, "Task unassigned successfully");
-  } else {
-    // Assign the task
+    if (userId !== loggedInUserId) {
+      throw new AppError(403, "Permission not allowed to assign task to others", "Assigne Task Error");
+    }
+
     task.assignTo = userId;
     const updatedTask = await task.save();
     user.tasksList.push(updatedTask._id.toString());
