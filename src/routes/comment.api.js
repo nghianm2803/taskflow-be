@@ -6,45 +6,46 @@ const validators = require("../middlewares/validators");
 const authMiddleware = require("../middlewares/authentication");
 
 /**
- * @route POST api/comments
+ * @route POST api/comment
  * @description Create a new comment
  * @access Login required
  */
-// router.post(
-//   "/",
-//   authMiddleware.loginRequired,
-//   validators.validate([
-//     body("content", "Missing content").exists().notEmpty(),
-//     // body("postId", "Missing postId").exists().isString().custom(validators.checkObjectId),
-//   ]),
-//   commentController.createNewComment
-// );
+router.post(
+  "/",
+  authMiddleware.loginRequired,
+  validators.validate([
+    body("content", "Missing content").exists().notEmpty(),
+    body("targetType", "Invalid targetType").exists().isIn(["Project", "Task"]),
+    body("targetId", "Invalid targetId").exists().custom(validators.checkObjectId),
+  ]),
+  commentController.createNewComment
+);
 
 /**
- * @route PUT api/comments/:id
+ * @route PUT api/comments/:commentId
  * @description Update a comment
  * @access Login required
  */
-// router.put(
-//   "/:id",
-//   authMiddleware.loginRequired,
-//   validators.validate([
-//     param("id").exists().isString().custom(validators.checkObjectId),
-//     body("content", "Missing content").exists().notEmpty(),
-//   ]),
-//   commentController.updateSingleComment
-// );
+router.put(
+  "/:commentId",
+  authMiddleware.loginRequired,
+  validators.validate([
+    param("commentId").exists().isString().custom(validators.checkObjectId),
+    body("content", "Missing content").exists().notEmpty(),
+  ]),
+  commentController.editComment
+);
 
 /**
- * @route DELETE api/comments/:id
+ * @route DELETE api/comment/:commentId
  * @description Delete a comment
  * @access Login required
  */
-// router.delete(
-//   "/:id",
-//   authMiddleware.loginRequired,
-//   validators.validate([param("id").exists().isString().custom(validators.checkObjectId)]),
-//   commentController.deleteSingleComment
-// );
+router.delete(
+  "/:commentId",
+  authMiddleware.loginRequired,
+  validators.validate([param("commentId").exists().isString().custom(validators.checkObjectId)]),
+  commentController.deleteComment
+);
 
 module.exports = router;
