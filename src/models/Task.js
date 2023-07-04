@@ -18,10 +18,10 @@ const TaskSchema = Schema(
       default: "Low",
       required: true,
     },
+    deadline: { type: Date, required: true },
     assignTo: { type: mongoose.SchemaTypes.ObjectId, ref: "User" }, //one to one optional
     projectTo: { type: mongoose.SchemaTypes.ObjectId, ref: "Project" },
     comments: [{ type: mongoose.SchemaTypes.ObjectId, ref: "Comment" }],
-    deadline: { type: Date, required: true },
     isDeleted: { type: Boolean, default: false, required: true },
   },
   {
