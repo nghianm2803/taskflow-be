@@ -46,16 +46,28 @@ taskController.getTasks = catchAsync(async (req, res, next) => {
     .skip(offset)
     .limit(limit)
     .populate("assignTo")
-    .populate("projectTo");
+    .populate("projectTo")
+    .populate({
+      path: "comments",
+      populate: {
+        path: "author",
+        select: "name",
+      },
+    });
 
   // Extract the task names from the populated assignTo field
   taskList = taskList.map((task) => {
     const projectTo = task.projectTo;
     const assignTo = task.assignTo;
+    const comments = task.comments.map((comment) => ({
+      content: comment.content,
+      author: comment.author.name,
+    }));
     return {
       ...task.toJSON(),
       projectTo: projectTo ? projectTo.name : "",
       assignTo: assignTo ? assignTo.name : "",
+      comments: comments,
     };
   });
 
@@ -65,15 +77,29 @@ taskController.getTasks = catchAsync(async (req, res, next) => {
 // Get a task by id
 taskController.getTask = catchAsync(async (req, res, next) => {
   const taskId = req.params.taskId;
-  const detailTask = await Task.findOne({ _id: taskId }).populate("projectTo").populate("assignTo");
+  const detailTask = await Task.findOne({ _id: taskId })
+    .populate("projectTo")
+    .populate("assignTo")
+    .populate({
+      path: "comments",
+      populate: {
+        path: "author",
+        select: "name",
+      },
+    });
 
   // Extract the username from the populated projectTo field
   const projectTo = detailTask.projectTo;
   const assignTo = detailTask.assignTo;
+  const comments = detailTask.comments.map((comment) => ({
+    content: comment.content,
+    author: comment.author.name,
+  }));
   const modifiedTask = {
     ...detailTask.toJSON(),
     projectTo: projectTo ? projectTo.name : "",
     assignTo: assignTo ? assignTo.name : "",
+    comments: comments,
   };
 
   return sendResponse(res, 200, true, modifiedTask, null, "Get Task Info Successfully!");

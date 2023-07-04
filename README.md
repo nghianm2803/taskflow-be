@@ -42,7 +42,7 @@ With TaskFlow, managing tasks becomes a breeze. Its user-friendly interface requ
 
 ### Team Collaboration
 - [x] Team member can view other members’ tasks
-- [ ] Team member and manager can leave comments on other members tasks
+- [x] Team member and manager can leave comments on other members tasks
 
 ### Reminder & Notification
 - [ ] Manager can receive email and/or in app notification about task status update by team member

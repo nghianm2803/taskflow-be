@@ -18,6 +18,10 @@ commentController.createNewComment = catchAsync(async (req, res, next) => {
     targetId: targetObj._id,
   });
 
+  // Update the comments field of the target (project or task)
+  targetObj.comments.push(comment._id);
+  await targetObj.save();
+
   comment = await comment.populate("author");
 
   return sendResponse(res, 200, true, comment, null, "Create new comment successful");

@@ -44,6 +44,13 @@ projectController.getProjects = catchAsync(async (req, res, next) => {
         path: "assignTo",
         select: "name", // Include the name field of the assignTo user
       },
+    })
+    .populate({
+      path: "comments",
+      populate: {
+        path: "author",
+        select: "name",
+      },
     });
 
   // Extract the task names from the populated tasksList field
@@ -54,7 +61,14 @@ projectController.getProjects = catchAsync(async (req, res, next) => {
         assignTo: task.assignTo,
       };
     });
-    return { ...project.toJSON(), tasksList: tasks };
+
+    const comments = project.comments.map((comment) => {
+      return {
+        content: comment.content,
+        author: comment.author.name,
+      };
+    });
+    return { ...project.toJSON(), tasksList: tasks, comments: comments };
   });
 
   return sendResponse(res, 200, true, { projects, totalPages, count }, null, "");
@@ -63,26 +77,34 @@ projectController.getProjects = catchAsync(async (req, res, next) => {
 projectController.getSingleProject = catchAsync(async (req, res, next) => {
   const projectId = req.params.projectId;
 
-  let project = await Project.findById(projectId).populate({
-    path: "tasksList",
-    populate: {
-      path: "assignTo",
-      select: "name", // Include the name field of the assignTo user
-    },
-  });
-  if (!project) throw new AppError(404, "Project not found", "Get Single Project Error");
+  let project = await Project.findById(projectId)
+    .populate({
+      path: "tasksList",
+      populate: {
+        path: "assignTo",
+        select: "name", // Include the name field of the assignTo user
+      },
+    })
+    .populate({
+      path: "comments",
+      populate: {
+        path: "author",
+        select: "name",
+      },
+    });
 
-  // Extract the string representation of ObjectIds in tasksList
-  const taskName = project.tasksList.map((task) => {
-    return {
-      name: task.name,
-      assignTo: task.assignTo,
-    };
-  });
+  if (!project) throw new AppError(404, "Project not found", "Get Single Project Error");
 
   const modifiedProject = {
     ...project.toJSON(),
-    tasksList: taskName,
+    tasksList: project.tasksList.map((task) => ({
+      name: task.name,
+      assignTo: task.assignTo,
+    })),
+    comments: project.comments.map((comment) => ({
+      content: comment.content,
+      author: comment.author.name,
+    })),
   };
 
   return sendResponse(res, 200, true, modifiedProject, null, "");
