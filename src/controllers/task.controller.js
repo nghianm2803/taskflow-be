@@ -65,7 +65,7 @@ taskController.getTasks = catchAsync(async (req, res, next) => {
     }));
     return {
       ...task.toJSON(),
-      projectTo: projectTo ? projectTo.name : "",
+      projectTo: projectTo ? projectTo._id : "",
       assignTo: assignTo ? assignTo.name : "",
       comments: comments,
     };
@@ -97,7 +97,7 @@ taskController.getTask = catchAsync(async (req, res, next) => {
   }));
   const modifiedTask = {
     ...detailTask.toJSON(),
-    projectTo: projectTo ? projectTo.name : "",
+    projectTo: projectTo ? projectTo._id : "",
     assignTo: assignTo ? assignTo.name : "",
     comments: comments,
   };

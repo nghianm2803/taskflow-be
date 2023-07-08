@@ -81,4 +81,16 @@ router.put(
   projectController.addTask
 );
 
+/**
+ * @route GET /project/:projectId/comments
+ * @description Get comments of a project
+ * @access Login required
+ */
+// router.get(
+//   "/:projectId/comments",
+//   validators.validate([param("projectId").exists().isString().custom(validators.checkObjectId)]),
+//   authMiddleware.loginRequired,
+//   projectController.getCommentsOfProject
+// );
+
 module.exports = router;

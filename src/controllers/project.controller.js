@@ -1,6 +1,7 @@
 const { sendResponse, AppError, catchAsync } = require("../helpers/utils.js");
 const Project = require("../models/Project");
 const Task = require("../models/Task");
+// const Comment = require("../models/Comment");
 const projectController = {};
 
 projectController.createProject = catchAsync(async (req, res, next) => {
@@ -182,5 +183,26 @@ projectController.addTask = catchAsync(async (req, res, next) => {
     return sendResponse(res, 200, true, null, "Task added to project successfully");
   }
 });
+
+// projectController.getCommentsOfProject = catchAsync(async (req, res, next) => {
+//   const projectId = req.params.projectId;
+//   const page = parseInt(req.query.page) || 1;
+//   const limit = parseInt(req.query.limit) || 10;
+
+//   const project = Project.findById(projectId);
+//   if (!project) throw new AppError(404, "Project not found", "Get Project Error");
+
+//   const count = await Comment.countDocuments({ project: projectId });
+//   const totalPages = Math.ceil(count / limit);
+//   const offset = limit * (page - 1);
+
+//   const comments = await Comment.find({ project: projectId })
+//     .sort({ createdAt: -1 })
+//     .skip(offset)
+//     .limit(limit)
+//     .populate("author");
+
+//   return sendResponse(res, 200, true, { comments, totalPages, count }, null, "");
+// });
 
 module.exports = projectController;
