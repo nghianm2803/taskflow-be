@@ -38,8 +38,8 @@ router.post(
     body("deadline", "Invalid Deadline")
       .exists()
       .notEmpty()
-      .matches(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})$/)
-      .withMessage("Deadline must be in the format 'yyyy-mm-dd hh:mm:ss'"),
+      .matches(/^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})$/)
+      .withMessage("Deadline must be in the format 'yyyy/mm/dd hh:mm:ss'"),
   ]),
   authMiddleware.loginRequired,
   permission.managerCheck,
@@ -55,8 +55,7 @@ router.put(
   "/:taskId",
   validators.validate([
     body("status")
-      .notEmpty()
-      .withMessage("Status is empty")
+      .optional()
       .isIn(["Pending", "Working", "Review", "Done"])
       .withMessage("Status must be Pending, Working, Review or Done"),
     body("priority").optional().isIn(["Low", "Medium", "High"]).withMessage("Priority must be Low, Medium or High"),
@@ -80,7 +79,7 @@ router.delete(
 );
 
 /**
- * @route PUT api/tasks/:taskId/assign
+ * @route PUT api/tasks/:taskId/user/:userId
  * @description Assign or unassign a task to a user
  * @access Login required
  * @requiredBody: userId

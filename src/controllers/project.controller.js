@@ -168,7 +168,7 @@ projectController.addTask = catchAsync(async (req, res, next) => {
     }
     await project.save();
 
-    return sendResponse(res, 200, true, null, "Task remove successfully");
+    return sendResponse(res, 200, true, null, null, "Task remove successfully");
   } else {
     // Add the task to the project
     task.projectTo = projectId;
@@ -180,7 +180,7 @@ projectController.addTask = catchAsync(async (req, res, next) => {
     }
     project.tasksList.push(taskId);
     await project.save();
-    return sendResponse(res, 200, true, null, "Task added to project successfully");
+    return sendResponse(res, 200, true, null, null, "Task added to project successfully");
   }
 });
 

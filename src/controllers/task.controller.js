@@ -147,7 +147,7 @@ taskController.projects = catchAsync(async (req, res, next) => {
   }
   project.tasksList.push(taskId);
   await project.save();
-  return sendResponse(res, 200, true, null, "Task added to project successfully");
+  return sendResponse(res, 200, true, null, null, "Task added to project successfully");
 });
 
 // Assign task to user
@@ -183,7 +183,7 @@ taskController.assignTask = catchAsync(async (req, res, next) => {
       }
       await user.save();
 
-      return sendResponse(res, 200, true, null, "Task unassigned successfully");
+      return sendResponse(res, 200, true, null, null, "Task unassigned successfully");
     } else {
       // Assign the task
       task.assignTo = userId;
@@ -191,7 +191,7 @@ taskController.assignTask = catchAsync(async (req, res, next) => {
       user.tasksList.push(updatedTask._id.toString());
       await user.save();
 
-      return sendResponse(res, 200, true, null, "Task assigned successfully");
+      return sendResponse(res, 200, true, null, null, "Task assigned successfully");
     }
   } else if (loggedInUserRole === "Employee") {
     // Employee can only assign task to themselves if task is unassigned
@@ -208,7 +208,7 @@ taskController.assignTask = catchAsync(async (req, res, next) => {
     user.tasksList.push(updatedTask._id.toString());
     await user.save();
 
-    return sendResponse(res, 200, true, null, "Task assigned successfully");
+    return sendResponse(res, 200, true, null, null, "Task assigned successfully");
   }
 });
 
