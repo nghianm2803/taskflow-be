@@ -16,14 +16,14 @@ router.use("/users", userApi);
 
 /* Project API */
 const projectApi = require("./project.api");
-router.use("/project", projectApi);
+router.use("/projects", projectApi);
 
 /* Task API */
 const taskApi = require("./task.api");
-router.use("/task", taskApi);
+router.use("/tasks", taskApi);
 
 /* Comment API */
 const commentApi = require("./comment.api");
-router.use("/comment", commentApi);
+router.use("/comments", commentApi);
 
 module.exports = router;

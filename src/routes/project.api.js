@@ -23,14 +23,14 @@ router.post(
 );
 
 /**
- * @route GET /project
+ * @route GET /projects
  * @description User view all projects
  * @access Login
  */
 router.get("/", authMiddleware.loginRequired, projectController.getProjects);
 
 /**
- * @route GET /project
+ * @route GET /projects/:projectId
  * @description User view a specific projects
  * @access Login
  */
@@ -42,7 +42,7 @@ router.get(
 );
 
 /**
- * @route PUT /project/:id
+ * @route PUT /projects/:projectId
  * @description  Manager update a project
  * @access Manager
  */
@@ -55,7 +55,7 @@ router.put(
 );
 
 /**
- * @route DELETE /project/:id
+ * @route DELETE /projects/:id
  * @description  Manager remove a project
  * @access Manager
  */
@@ -68,7 +68,7 @@ router.delete(
 );
 
 /**
- * @route PUT api/project/:projectId/task/:taskId
+ * @route PUT /projects/:projectId/task/:taskId
  * @description Add task to a project
  * @access Manager
  */
@@ -82,7 +82,7 @@ router.put(
 );
 
 /**
- * @route GET /project/:projectId/comments
+ * @route GET /projects/:projectId/comments
  * @description Get comments of a project
  * @access Login required
  */

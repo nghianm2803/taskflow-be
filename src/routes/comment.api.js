@@ -6,7 +6,7 @@ const validators = require("../middlewares/validators");
 const authMiddleware = require("../middlewares/authentication");
 
 /**
- * @route POST api/comment
+ * @route POST /comments
  * @description Create a new comment
  * @access Login required
  */
@@ -22,7 +22,7 @@ router.post(
 );
 
 /**
- * @route PUT api/comments/:commentId
+ * @route PUT /comments/:commentId
  * @description Update a comment
  * @access Login required
  */
@@ -37,7 +37,7 @@ router.put(
 );
 
 /**
- * @route DELETE api/comment/:commentId
+ * @route DELETE /comments/:commentId
  * @description Delete a comment
  * @access Login required
  */
