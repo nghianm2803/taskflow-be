@@ -68,29 +68,17 @@ router.delete(
 );
 
 /**
- * @route PUT /projects/:projectId/task/:taskId
+ * @route PUT /projects/:projectId/tasks/:taskId
  * @description Add task to a project
  * @access Manager
  */
 router.put(
-  "/:projectId/task/:taskId",
+  "/:projectId/tasks/:taskId",
   validators.validate([param("projectId").exists().isString().custom(validators.checkObjectId)]),
   validators.validate([param("taskId").exists().isString().custom(validators.checkObjectId)]),
   authMiddleware.loginRequired,
   permission.managerCheck,
   projectController.addTask
 );
-
-/**
- * @route GET /projects/:projectId/comments
- * @description Get comments of a project
- * @access Login required
- */
-// router.get(
-//   "/:projectId/comments",
-//   validators.validate([param("projectId").exists().isString().custom(validators.checkObjectId)]),
-//   authMiddleware.loginRequired,
-//   projectController.getCommentsOfProject
-// );
 
 module.exports = router;

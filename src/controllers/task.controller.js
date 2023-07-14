@@ -2,6 +2,7 @@ const { sendResponse, AppError, catchAsync } = require("../helpers/utils.js");
 const Task = require("../models/Task");
 const User = require("../models/User");
 const Project = require("../models/Project");
+const Comment = require("../models/Comment");
 const taskController = {};
 
 // Get a list of tasks
@@ -46,28 +47,16 @@ taskController.getTasks = catchAsync(async (req, res, next) => {
     .skip(offset)
     .limit(limit)
     .populate("assignTo")
-    .populate("projectTo")
-    .populate({
-      path: "comments",
-      populate: {
-        path: "author",
-        select: "name",
-      },
-    });
-
+    .populate("projectTo");
   // Extract the task names from the populated assignTo field
   taskList = taskList.map((task) => {
     const projectTo = task.projectTo;
     const assignTo = task.assignTo;
-    const comments = task.comments.map((comment) => ({
-      content: comment.content,
-      author: comment.author.name,
-    }));
+
     return {
       ...task.toJSON(),
       projectTo: projectTo ? projectTo._id : "",
       assignTo: assignTo ? assignTo.name : "",
-      comments: comments,
     };
   });
 
@@ -77,7 +66,7 @@ taskController.getTasks = catchAsync(async (req, res, next) => {
 // Get a task by id
 taskController.getTask = catchAsync(async (req, res, next) => {
   const taskId = req.params.taskId;
-  const detailTask = await Task.findOne({ _id: taskId })
+  let task = await Task.findOne({ _id: taskId })
     .populate("projectTo")
     .populate("assignTo")
     .populate({
@@ -88,21 +77,12 @@ taskController.getTask = catchAsync(async (req, res, next) => {
       },
     });
 
-  // Extract the username from the populated projectTo field
-  const projectTo = detailTask.projectTo;
-  const assignTo = detailTask.assignTo;
-  const comments = detailTask.comments.map((comment) => ({
-    content: comment.content,
-    author: comment.author.name,
-  }));
-  const modifiedTask = {
-    ...detailTask.toJSON(),
-    projectTo: projectTo ? projectTo._id : "",
-    assignTo: assignTo ? assignTo.name : "",
-    comments: comments,
-  };
+  if (!task) throw new AppError(404, "Post not found", "Get Single Post Error");
 
-  return sendResponse(res, 200, true, modifiedTask, null, "Get Task Info Successfully!");
+  task = task.toJSON();
+  task.comments = await Comment.find({ task: task._id });
+
+  return sendResponse(res, 200, true, task, null, "Get Task Info Successfully!");
 });
 
 // Add a new task
@@ -121,7 +101,7 @@ taskController.createTask = catchAsync(async (req, res, next) => {
 });
 
 // Add a task to a project
-taskController.projects = catchAsync(async (req, res, next) => {
+taskController.addToProjects = catchAsync(async (req, res, next) => {
   const taskId = req.params.taskId;
   const projectId = req.params.projectId;
 
@@ -244,7 +224,28 @@ taskController.deleteTask = catchAsync(async (req, res, next) => {
     throw new AppError(404, "Task not found", "Delete Task Error");
   }
 
-  return sendResponse(res, 200, true, softDeleteTask, null, "Soft delete task success");
+  return sendResponse(res, 200, true, softDeleteTask, null, "Delete task success");
+});
+
+taskController.getCommentsOfTask = catchAsync(async (req, res, next) => {
+  const taskId = req.params.taskId;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+
+  const task = Task.findById(taskId);
+  if (!task) throw new AppError(404, "Task not found", "Get Comment Error");
+
+  const count = await Comment.countDocuments({ task: taskId });
+  const totalPages = Math.ceil(count / limit);
+  const offset = limit * (page - 1);
+
+  const comments = await Comment.find({ task: taskId })
+    .sort({ createdAt: -1 })
+    .skip(offset)
+    .limit(limit)
+    .populate("author");
+
+  return sendResponse(res, 200, true, { comments, totalPages, count }, null, "");
 });
 
 module.exports = taskController;

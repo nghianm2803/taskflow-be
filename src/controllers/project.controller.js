@@ -1,7 +1,6 @@
 const { sendResponse, AppError, catchAsync } = require("../helpers/utils.js");
 const Project = require("../models/Project");
 const Task = require("../models/Task");
-// const Comment = require("../models/Comment");
 const projectController = {};
 
 projectController.createProject = catchAsync(async (req, res, next) => {
@@ -45,13 +44,6 @@ projectController.getProjects = catchAsync(async (req, res, next) => {
         path: "assignTo",
         select: "name", // Include the name field of the assignTo user
       },
-    })
-    .populate({
-      path: "comments",
-      populate: {
-        path: "author",
-        select: "name",
-      },
     });
 
   // Extract the task names from the populated tasksList field
@@ -63,13 +55,7 @@ projectController.getProjects = catchAsync(async (req, res, next) => {
       };
     });
 
-    const comments = project.comments.map((comment) => {
-      return {
-        content: comment.content,
-        author: comment.author.name,
-      };
-    });
-    return { ...project.toJSON(), tasksList: tasks, comments: comments };
+    return { ...project.toJSON(), tasksList: tasks };
   });
 
   return sendResponse(res, 200, true, { projects, totalPages, count }, null, "");
@@ -78,21 +64,13 @@ projectController.getProjects = catchAsync(async (req, res, next) => {
 projectController.getSingleProject = catchAsync(async (req, res, next) => {
   const projectId = req.params.projectId;
 
-  let project = await Project.findById(projectId)
-    .populate({
-      path: "tasksList",
-      populate: {
-        path: "assignTo",
-        select: "name", // Include the name field of the assignTo user
-      },
-    })
-    .populate({
-      path: "comments",
-      populate: {
-        path: "author",
-        select: "name",
-      },
-    });
+  let project = await Project.findById(projectId).populate({
+    path: "tasksList",
+    populate: {
+      path: "assignTo",
+      select: "name", // Include the name field of the assignTo user
+    },
+  });
 
   if (!project) throw new AppError(404, "Project not found", "Get Single Project Error");
 
@@ -101,10 +79,6 @@ projectController.getSingleProject = catchAsync(async (req, res, next) => {
     tasksList: project.tasksList.map((task) => ({
       name: task.name,
       assignTo: task.assignTo,
-    })),
-    comments: project.comments.map((comment) => ({
-      content: comment.content,
-      author: comment.author.name,
     })),
   };
 
@@ -137,7 +111,7 @@ projectController.deleteProject = catchAsync(async (req, res, next) => {
     throw new AppError(404, "Not Found", "Project not found");
   }
 
-  sendResponse(res, 200, true, softDeleteProject, null, "Soft delete project success");
+  sendResponse(res, 200, true, softDeleteProject, null, "Delete project success");
 });
 
 projectController.addTask = catchAsync(async (req, res, next) => {
@@ -183,26 +157,5 @@ projectController.addTask = catchAsync(async (req, res, next) => {
     return sendResponse(res, 200, true, null, null, "Task added to project successfully");
   }
 });
-
-// projectController.getCommentsOfProject = catchAsync(async (req, res, next) => {
-//   const projectId = req.params.projectId;
-//   const page = parseInt(req.query.page) || 1;
-//   const limit = parseInt(req.query.limit) || 10;
-
-//   const project = Project.findById(projectId);
-//   if (!project) throw new AppError(404, "Project not found", "Get Project Error");
-
-//   const count = await Comment.countDocuments({ project: projectId });
-//   const totalPages = Math.ceil(count / limit);
-//   const offset = limit * (page - 1);
-
-//   const comments = await Comment.find({ project: projectId })
-//     .sort({ createdAt: -1 })
-//     .skip(offset)
-//     .limit(limit)
-//     .populate("author");
-
-//   return sendResponse(res, 200, true, { comments, totalPages, count }, null, "");
-// });
 
 module.exports = projectController;

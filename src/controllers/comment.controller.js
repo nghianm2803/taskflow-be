@@ -1,27 +1,23 @@
 const { AppError, catchAsync, sendResponse } = require("../helpers/utils");
-const mongoose = require("mongoose");
 const Comment = require("../models/Comment");
+const Task = require("../models/Task");
 
 const commentController = {};
 
 commentController.createNewComment = catchAsync(async (req, res, next) => {
   const userId = req.userId;
-  const { content, targetType, targetId } = req.body;
+  const { content, taskId } = req.body;
 
-  const targetObj = await mongoose.model(targetType).findById(targetId);
-  if (!targetObj) throw new AppError(404, `${targetType} not found`, "Add Comment Error");
+  const task = Task.findById(taskId);
+  if (!task) throw new AppError(404, "Task not found", "Create New Comment Error");
 
   let comment = await Comment.create({
     author: userId,
+    task: taskId,
     content,
-    targetType,
-    targetId: targetObj._id,
   });
 
-  // Update the comments field of the target (project or task)
-  targetObj.comments.push(comment._id);
-  await targetObj.save();
-
+  await calculateCommentCount(taskId);
   comment = await comment.populate("author");
 
   return sendResponse(res, 200, true, comment, null, "Create new comment successful");

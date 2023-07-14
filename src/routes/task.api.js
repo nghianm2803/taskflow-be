@@ -79,13 +79,13 @@ router.delete(
 );
 
 /**
- * @route PUT api/tasks/:taskId/user/:userId
+ * @route PUT api/tasks/:taskId/users/:userId
  * @description Assign or unassign a task to a user
  * @access Login required
  * @requiredBody: userId
  */
 router.put(
-  "/:taskId/user/:userId",
+  "/:taskId/users/:userId",
   validators.validate([param("taskId").exists().isString().custom(validators.checkObjectId)]),
   validators.validate([param("userId").exists().isString().custom(validators.checkObjectId)]),
   authMiddleware.loginRequired,
@@ -93,16 +93,28 @@ router.put(
 );
 
 /**
- * @route PUT api/tasks/:taskId/project/:projectId
+ * @route PUT api/tasks/:taskId/projects/:projectId
  * @description Add or remove a task to project
  * @access Login required
  */
 router.put(
-  "/:taskId/project/:projectId",
+  "/:taskId/projects/:projectId",
   validators.validate([param("taskId").exists().isString().custom(validators.checkObjectId)]),
   validators.validate([param("projectId").exists().isString().custom(validators.checkObjectId)]),
   authMiddleware.loginRequired,
-  taskController.projects
+  taskController.addToProjects
+);
+
+/**
+ * @route GET /tasks/:taskId/comments
+ * @description Get comments of a task
+ * @access Login required
+ */
+router.get(
+  "/:taskId/comments",
+  validators.validate([param("taskId").exists().isString().custom(validators.checkObjectId)]),
+  authMiddleware.loginRequired,
+  taskController.getCommentsOfTask
 );
 
 module.exports = router;

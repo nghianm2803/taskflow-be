@@ -15,8 +15,7 @@ router.post(
   authMiddleware.loginRequired,
   validators.validate([
     body("content", "Missing content").exists().notEmpty(),
-    body("targetType", "Invalid targetType").exists().isIn(["Project", "Task"]),
-    body("targetId", "Invalid targetId").exists().custom(validators.checkObjectId),
+    body("taskId", "Missing TaskId").exists().isString().custom(validators.checkObjectId),
   ]),
   commentController.createNewComment
 );
