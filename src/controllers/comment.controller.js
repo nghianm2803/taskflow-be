@@ -17,7 +17,7 @@ commentController.createNewComment = catchAsync(async (req, res, next) => {
     content,
   });
 
-  await calculateCommentCount(taskId);
+  // await calculateCommentCount(taskId);
   comment = await comment.populate("author");
 
   return sendResponse(res, 200, true, comment, null, "Create new comment successful");
