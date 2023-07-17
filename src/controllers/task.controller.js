@@ -240,7 +240,7 @@ taskController.getCommentsOfTask = catchAsync(async (req, res, next) => {
   const offset = limit * (page - 1);
 
   const comments = await Comment.find({ task: taskId })
-    .sort({ createdAt: -1 })
+    .sort({ createdAt: 1 })
     .skip(offset)
     .limit(limit)
     .populate("author");
