@@ -56,7 +56,7 @@ taskController.getTasks = catchAsync(async (req, res, next) => {
     return {
       ...task.toJSON(),
       projectTo: projectTo ? projectTo._id : "",
-      assignTo: assignTo ? assignTo.name : "",
+      assignTo: assignTo ? assignTo : "",
     };
   });
 
@@ -195,12 +195,21 @@ taskController.assignTask = catchAsync(async (req, res, next) => {
 // Update a task by id
 taskController.editTask = catchAsync(async (req, res, next) => {
   const taskId = req.params.taskId;
+  const loggedInUserId = req.userId;
+  const loggedInUserRole = req.permission;
+
   const updateTask = req.body;
 
   // Find the task by taskId
   const task = await Task.findById(taskId);
   if (!task) {
     throw new AppError(404, "Not Found", "Task not found");
+  }
+
+  // Retrieve the assigned user ID of the task
+  const assignedUserId = task.assignTo._id.toString();
+  if (loggedInUserRole !== "Manager" && loggedInUserId !== assignedUserId) {
+    throw new AppError(403, "You can only edit tasks assigned to you", "Update Task Error");
   }
 
   // Check if the status change is valid

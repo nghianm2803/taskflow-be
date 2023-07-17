@@ -11,7 +11,7 @@ const permission = require("../middlewares/permission");
  * @description Get a list of tasks
  * @access Manager
  */
-router.get("/", authMiddleware.loginRequired, permission.managerCheck, taskController.getTasks);
+router.get("/", authMiddleware.loginRequired, taskController.getTasks);
 
 /**
  * @route GET /tasks/:taskId
