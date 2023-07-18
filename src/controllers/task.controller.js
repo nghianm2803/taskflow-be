@@ -30,6 +30,12 @@ taskController.getTasks = catchAsync(async (req, res, next) => {
     filter.status = status;
   }
 
+  // Filter search by priority sort by createdAt : updatedAt and order by asc : desc
+  const priority = req.query.priority;
+  if (priority && ["Low", "Medium", "High"].includes(priority)) {
+    filter.priority = priority;
+  }
+
   // Filter search by name sort by createdAt : updatedAt and order by asc : desc
   const name = req.query.name;
   if (name) {
@@ -238,23 +244,17 @@ taskController.deleteTask = catchAsync(async (req, res, next) => {
 
 taskController.getCommentsOfTask = catchAsync(async (req, res, next) => {
   const taskId = req.params.taskId;
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
 
   const task = Task.findById(taskId);
   if (!task) throw new AppError(404, "Task not found", "Get Comment Error");
 
   const count = await Comment.countDocuments({ task: taskId });
-  const totalPages = Math.ceil(count / limit);
-  const offset = limit * (page - 1);
 
   const comments = await Comment.find({ task: taskId })
     .sort({ createdAt: 1 })
-    .skip(offset)
-    .limit(limit)
     .populate("author");
 
-  return sendResponse(res, 200, true, { comments, totalPages, count }, null, "");
+  return sendResponse(res, 200, true, { comments, count }, null, "");
 });
 
 module.exports = taskController;
