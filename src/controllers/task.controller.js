@@ -69,6 +69,71 @@ taskController.getTasks = catchAsync(async (req, res, next) => {
   return sendResponse(res, 200, true, { taskList, totalPages, count }, null, "");
 });
 
+// Get all tasks of current user
+taskController.getTasksOfCurrentUser = catchAsync(async (req, res, next) => {
+  const loggedInUserId = req.userId;
+  let { page, limit, ...filter } = { ...req.query };
+
+  page = parseInt(page) || 1;
+  limit = parseInt(limit) || 10;
+
+  const filterConditions = [{ isDeleted: false }];
+  if (filter.name) {
+    filterConditions.push({
+      ["name"]: { $regex: filter.name, $options: "i" },
+    });
+  }
+  const filterCrireria = filterConditions.length ? { $and: filterConditions } : {};
+
+  const count = await Task.countDocuments(filterCrireria);
+  const totalPages = Math.ceil(count / limit);
+  const offset = limit * (page - 1);
+
+  // Filter search by status sort by createdAt : updatedAt and order by asc : desc
+  const status = req.query.status;
+  if (status && ["Pending", "Doing", "Review", "Done"].includes(status)) {
+    filter.status = status;
+  }
+
+  // Filter search by priority sort by createdAt : updatedAt and order by asc : desc
+  const priority = req.query.priority;
+  if (priority && ["Low", "Medium", "High"].includes(priority)) {
+    filter.priority = priority;
+  }
+
+  // Filter search by name sort by createdAt : updatedAt and order by asc : desc
+  const name = req.query.name;
+  if (name) {
+    filter.name = { $regex: name, $options: "i" };
+  }
+
+  const sortBy = req.query.sortBy === "updatedAt" ? "updatedAt" : "createdAt";
+  const sortOrder = req.query.sortOrder === "desc" ? -1 : 1;
+
+  const sortOptions = {};
+  sortOptions[sortBy] = sortOrder;
+
+  let taskList = await Task.find({ assignTo: loggedInUserId, ...filter })
+    .sort(sortOptions)
+    .skip(offset)
+    .limit(limit)
+    .populate("assignTo")
+    .populate("projectTo");
+  // Extract the task names from the populated assignTo field
+  taskList = taskList.map((task) => {
+    const projectTo = task.projectTo;
+    const assignTo = task.assignTo;
+
+    return {
+      ...task.toJSON(),
+      projectTo: projectTo ? projectTo._id : "",
+      assignTo: assignTo ? assignTo : "",
+    };
+  });
+
+  return sendResponse(res, 200, true, { taskList, totalPages, count }, null, "");
+});
+
 // Get a task by id
 taskController.getTask = catchAsync(async (req, res, next) => {
   const taskId = req.params.taskId;
@@ -250,9 +315,7 @@ taskController.getCommentsOfTask = catchAsync(async (req, res, next) => {
 
   const count = await Comment.countDocuments({ task: taskId });
 
-  const comments = await Comment.find({ task: taskId })
-    .sort({ createdAt: 1 })
-    .populate("author");
+  const comments = await Comment.find({ task: taskId }).sort({ createdAt: 1 }).populate("author");
 
   return sendResponse(res, 200, true, { comments, count }, null, "");
 });
