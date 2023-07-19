@@ -91,9 +91,13 @@ taskController.getTasksOfCurrentUser = catchAsync(async (req, res, next) => {
   let { page, limit, sortBy, sortOrder, ...filter } = { ...req.query };
 
   page = parseInt(page) || 1;
-  limit = parseInt(limit) || 10;
+  limit = parseInt(limit) || 100;
 
-  const filterConditions = [{ isDeleted: false }];
+  const currentUser = await User.findById(loggedInUserId);
+  if (!currentUser) throw new AppError(404, "Current User not found", "Get User Error");
+
+  const filterConditions = [{ isDeleted: false }, { assignTo: currentUser }];
+
   // Filter search by name
   const name = req.query.name;
   if (name) {
@@ -127,7 +131,9 @@ taskController.getTasksOfCurrentUser = catchAsync(async (req, res, next) => {
   // Combine all filter criteria
   const filterCriteria = filterConditions.length
     ? {
-        $and: [{ isDeleted: false }, nameFilter, statusFilter, priorityFilter].filter(Boolean),
+        $and: [{ isDeleted: false }, { assignTo: currentUser }, nameFilter, statusFilter, priorityFilter].filter(
+          Boolean
+        ),
       }
     : {};
 
@@ -135,11 +141,44 @@ taskController.getTasksOfCurrentUser = catchAsync(async (req, res, next) => {
   const totalPages = Math.ceil(count / limit);
   const offset = limit * (page - 1);
 
-  sortBy = req.query.sortBy === "updatedAt" ? "updatedAt" : "createdAt";
-  sortOrder = req.query.sortOrder === "desc" ? -1 : 1;
+  // Handle sort feature
+  const validSortFields = ["createdAt", "deadline", "status", "priority"];
 
-  const sortOptions = {};
-  sortOptions[sortBy] = sortOrder;
+  const mapStatusToNumber = (status) => {
+    const statusMap = {
+      Pending: 1,
+      Working: 2,
+      Review: 3,
+      Done: 4,
+    };
+    return statusMap[status] || 0;
+  };
+
+  const mapPriorityToNumber = (priority) => {
+    const priorityMap = {
+      Low: 1,
+      Medium: 2,
+      High: 3,
+    };
+    return priorityMap[priority] || 0;
+  };
+
+  // Validate and set the sorting options
+  sortBy = validSortFields.includes(sortBy) ? sortBy : "createdAt";
+  sortOrder = sortOrder === "desc" ? -1 : 1;
+
+  let sortOptions = {};
+
+  // Custom sort for status and priority
+  if (sortBy === "status") {
+    sortOptions = { status: sortOrder };
+  } else if (sortBy === "priority") {
+    sortOptions = { priority: sortOrder };
+  } else {
+    sortOptions = { [sortBy]: sortOrder };
+  }
+
+  // {{baseUrl}}/tasks/mytasks?sortBy=status&sortOrder=desc
 
   let taskList = await Task.find({ assignTo: loggedInUserId, ...filter, ...filterCriteria })
     .sort(sortOptions)
@@ -147,8 +186,28 @@ taskController.getTasksOfCurrentUser = catchAsync(async (req, res, next) => {
     .limit(limit)
     .populate("assignTo")
     .populate("projectTo");
+
+  if (sortBy === "status") {
+    taskList.sort((taskA, taskB) => {
+      const statusComparison = mapStatusToNumber(taskA.status) - mapStatusToNumber(taskB.status);
+      return statusComparison !== 0 ? statusComparison * sortOrder : taskA.deadline - taskB.deadline;
+    });
+  } else if (sortBy === "priority") {
+    taskList.sort((taskA, taskB) => {
+      const priorityComparison = mapPriorityToNumber(taskA.priority) - mapPriorityToNumber(taskB.priority);
+      return priorityComparison !== 0 ? priorityComparison * sortOrder : taskA.deadline - taskB.deadline;
+    });
+  }
+
   // Extract the task names from the populated assignTo field
   taskList = taskList.map((task) => {
+    // return {
+    //   name: task.name,
+    //   status: task.status,
+    //   priority: task.priority,
+    //   deadline: task.deadline,
+    // };
+
     const projectTo = task.projectTo;
     const assignTo = task.assignTo;
 
