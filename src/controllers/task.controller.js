@@ -7,53 +7,69 @@ const taskController = {};
 
 // Get a list of tasks
 taskController.getTasks = catchAsync(async (req, res, next) => {
-  let { page, limit, ...filter } = { ...req.query };
+  let { page, limit, sortBy, sortOrder, ...filter } = { ...req.query };
 
   page = parseInt(page) || 1;
-  limit = parseInt(limit) || 10;
+  limit = parseInt(limit) || 100;
 
   const filterConditions = [{ isDeleted: false }];
-  if (filter.name) {
-    filterConditions.push({
-      ["name"]: { $regex: filter.name, $options: "i" },
-    });
-  }
-  const filterCrireria = filterConditions.length ? { $and: filterConditions } : {};
 
-  const count = await Task.countDocuments(filterCrireria);
-  const totalPages = Math.ceil(count / limit);
-  const offset = limit * (page - 1);
-
-  // Filter search by status sort by createdAt : updatedAt and order by asc : desc
-  const status = req.query.status;
-  if (status && ["Pending", "Doing", "Review", "Done"].includes(status)) {
-    filter.status = status;
-  }
-
-  // Filter search by priority sort by createdAt : updatedAt and order by asc : desc
-  const priority = req.query.priority;
-  if (priority && ["Low", "Medium", "High"].includes(priority)) {
-    filter.priority = priority;
-  }
-
-  // Filter search by name sort by createdAt : updatedAt and order by asc : desc
+  // Filter search by name
   const name = req.query.name;
   if (name) {
+    filterConditions.push({
+      name: { $regex: name, $options: "i" },
+    });
     filter.name = { $regex: name, $options: "i" };
   }
 
-  const sortBy = req.query.sortBy === "updatedAt" ? "updatedAt" : "createdAt";
-  const sortOrder = req.query.sortOrder === "desc" ? -1 : 1;
+  // Filter search by status
+  const status = req.query.status;
+  if (status && ["Pending", "Doing", "Review", "Done"].includes(status)) {
+    filterConditions.push({
+      status: status,
+    });
+  }
+
+  // Filter search by priority
+  const priority = req.query.priority;
+  if (priority && ["Low", "Medium", "High"].includes(priority)) {
+    filterConditions.push({
+      priority: priority,
+    });
+  }
+
+  // Combine the filter conditions for individual fields
+  const nameFilter = name ? { name: { $regex: name, $options: "i" } } : {};
+  const statusFilter = status ? { status: status } : {};
+  const priorityFilter = priority ? { priority: priority } : {};
+
+  // Combine all filter criteria
+  const filterCriteria = filterConditions.length
+    ? {
+        $and: [{ isDeleted: false }, nameFilter, statusFilter, priorityFilter].filter(Boolean),
+      }
+    : {};
+
+  sortBy = req.query.sortBy === "updatedAt" ? "updatedAt" : "createdAt";
+  sortOrder = req.query.sortOrder === "desc" ? -1 : 1;
 
   const sortOptions = {};
   sortOptions[sortBy] = sortOrder;
 
-  let taskList = await Task.find(filter || {})
+  const count = await Task.countDocuments(filterCriteria);
+  const totalPages = Math.ceil(count / limit);
+  const offset = limit * (page - 1);
+
+  // {{baseUrl}}/tasks?name=task&status=Pending&sortBy=updatedAt&sortOrder=desc
+
+  let taskList = await Task.find({ ...filter, ...filterCriteria }) // Merge filterCriteria and filter
     .sort(sortOptions)
     .skip(offset)
     .limit(limit)
     .populate("assignTo")
     .populate("projectTo");
+
   // Extract the task names from the populated assignTo field
   taskList = taskList.map((task) => {
     const projectTo = task.projectTo;
@@ -72,48 +88,60 @@ taskController.getTasks = catchAsync(async (req, res, next) => {
 // Get all tasks of current user
 taskController.getTasksOfCurrentUser = catchAsync(async (req, res, next) => {
   const loggedInUserId = req.userId;
-  let { page, limit, ...filter } = { ...req.query };
+  let { page, limit, sortBy, sortOrder, ...filter } = { ...req.query };
 
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 10;
 
   const filterConditions = [{ isDeleted: false }];
-  if (filter.name) {
-    filterConditions.push({
-      ["name"]: { $regex: filter.name, $options: "i" },
-    });
-  }
-  const filterCrireria = filterConditions.length ? { $and: filterConditions } : {};
-
-  const count = await Task.countDocuments(filterCrireria);
-  const totalPages = Math.ceil(count / limit);
-  const offset = limit * (page - 1);
-
-  // Filter search by status sort by createdAt : updatedAt and order by asc : desc
-  const status = req.query.status;
-  if (status && ["Pending", "Doing", "Review", "Done"].includes(status)) {
-    filter.status = status;
-  }
-
-  // Filter search by priority sort by createdAt : updatedAt and order by asc : desc
-  const priority = req.query.priority;
-  if (priority && ["Low", "Medium", "High"].includes(priority)) {
-    filter.priority = priority;
-  }
-
-  // Filter search by name sort by createdAt : updatedAt and order by asc : desc
+  // Filter search by name
   const name = req.query.name;
   if (name) {
+    filterConditions.push({
+      name: { $regex: name, $options: "i" },
+    });
     filter.name = { $regex: name, $options: "i" };
   }
 
-  const sortBy = req.query.sortBy === "updatedAt" ? "updatedAt" : "createdAt";
-  const sortOrder = req.query.sortOrder === "desc" ? -1 : 1;
+  // Filter search by status
+  const status = req.query.status;
+  if (status && ["Pending", "Doing", "Review", "Done"].includes(status)) {
+    filterConditions.push({
+      status: status,
+    });
+  }
+
+  // Filter search by priority
+  const priority = req.query.priority;
+  if (priority && ["Low", "Medium", "High"].includes(priority)) {
+    filterConditions.push({
+      priority: priority,
+    });
+  }
+
+  // Combine the filter conditions for individual fields
+  const nameFilter = name ? { name: { $regex: name, $options: "i" } } : {};
+  const statusFilter = status ? { status: status } : {};
+  const priorityFilter = priority ? { priority: priority } : {};
+
+  // Combine all filter criteria
+  const filterCriteria = filterConditions.length
+    ? {
+        $and: [{ isDeleted: false }, nameFilter, statusFilter, priorityFilter].filter(Boolean),
+      }
+    : {};
+
+  const count = await Task.countDocuments(filterCriteria);
+  const totalPages = Math.ceil(count / limit);
+  const offset = limit * (page - 1);
+
+  sortBy = req.query.sortBy === "updatedAt" ? "updatedAt" : "createdAt";
+  sortOrder = req.query.sortOrder === "desc" ? -1 : 1;
 
   const sortOptions = {};
   sortOptions[sortBy] = sortOrder;
 
-  let taskList = await Task.find({ assignTo: loggedInUserId, ...filter })
+  let taskList = await Task.find({ assignTo: loggedInUserId, ...filter, ...filterCriteria })
     .sort(sortOptions)
     .skip(offset)
     .limit(limit)
