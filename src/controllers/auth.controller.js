@@ -18,7 +18,7 @@ authController.loginWithEmail = catchAsync(async (req, res, next) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return next(new AppError(400, "Wrong password", "Login Error"));
 
-  accessToken = await user.generateToken();
+  let accessToken = await user.generateToken();
   return sendResponse(res, 200, true, { user, accessToken }, null, "Login successful");
 });
 
@@ -35,21 +35,34 @@ authController.sendInvitation = catchAsync(async (req, res, next) => {
   const invitationToken = User.generateInvitationToken();
 
   // Construct the invitation link with the token
-  const invitationLink = `${req.protocol}://${req.get("host")}/api/auth/invitation?token=${invitationToken}`;
+  // http://localhost:3000/setup-account?token=${invitationToken}
+  const invitationLink = `${req.protocol}://localhost:3000/setup-account?token=${invitationToken}`;
 
   // Send the invitation email to the user's email address
   const mailgunClient = mailgun(mailgunConfig);
   const emailData = {
-    from: "nghianm2803@doo.com",
+    from: "nghianm2803@gmail.com",
     to: email,
     subject: "Invitation to join the team",
-    text: `You have been invited to join the team. Please click the following link to create your account: ${invitationLink}`,
+    html: `
+    <html>
+    <head>
+        <title>Invitation to Taskflow</title>
+    </head>
+    <body>
+        <div>
+            <h2>You have been invited to join Taskflow</h2>
+            <p>Please click the following link to set up your account: <a href="${invitationLink}" target="_blank">Set Up Account</a></p>
+        </div>
+    </body>
+    </html>
+  `,
   };
 
   mailgunClient.messages().send(emailData, (error, body) => {
     if (error) {
       console.error("Error sending email:", error);
-      return next(new AppError(500, "Failed to send invitation email", "Join Team Error"));
+      return next(new AppError(500, "Failed to send invitation email", "Send Invitation Error"));
     } else {
       console.log("Email sent successfully:", body);
     }
@@ -63,40 +76,32 @@ authController.sendInvitation = catchAsync(async (req, res, next) => {
   });
 });
 
-authController.joinSquad = catchAsync(async (req, res, next) => {
+// Endpoint employee setup account
+authController.setupAccount = catchAsync(async (req, res, next) => {
   const { token } = req.query;
-
-  // let { name, email, password } = req.body;
+  let { name, email, password } = req.body;
 
   // Validate the invitation token
-  // You can implement your own validation logic here
-  // if (!isValidInvitationToken(token)) {
-  //   return next(new AppError(400, "Invalid invitation token", "Join Squad Error"));
-  // }
-
   if (!token) {
-    return next(new AppError(400, "Invalid invitation token", "Join Squad Error"));
+    return next(new AppError(400, "Invalid invitation token", "Setup Account Error"));
   }
 
   const salt = await bcrypt.genSalt(10);
   password = await bcrypt.hash(password, salt);
 
   // Create a new user account
-  const newUser = new User({
+  const user = new User({
+    name,
     email,
     password: password,
     role: "Employee",
   });
 
   // Save the user in the database
-  await newUser.save();
+  await user.save();
+  const accessToken = await user.generateToken();
 
-  // Return a response indicating successful registration
-  return res.status(200).json({
-    success: true,
-    message: "Registration successful",
-    data: newUser,
-  });
+  sendResponse(res, 200, true, { user, accessToken }, null, "Setup Account Successful");
 });
 
 module.exports = authController;

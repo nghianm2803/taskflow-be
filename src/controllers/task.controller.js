@@ -235,7 +235,7 @@ taskController.getTask = catchAsync(async (req, res, next) => {
       },
     });
 
-  if (!task) throw new AppError(404, "Post not found", "Get Single Post Error");
+  if (!task) throw new AppError(404, "Task not found", "Get Single Post Error");
 
   task = task.toJSON();
   task.comments = await Comment.find({ task: task._id });

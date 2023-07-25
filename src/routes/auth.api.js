@@ -26,11 +26,11 @@ router.post(
 router.post("/invitation", authController.sendInvitation);
 
 /**
- * @route GET /auth/invitation
+ * @route POST /auth/setup-account
  * @description Employee setup account to joins the team with the invitation link
  * @access Public
  */
-router.get("/invitation", authController.joinSquad);
+router.post("/setup-account", authController.setupAccount);
 
 /**
  * @route POST /auth/login/facebook
