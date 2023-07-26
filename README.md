@@ -46,4 +46,4 @@ With TaskFlow, managing tasks becomes a breeze. Its user-friendly interface requ
 
 ### Reminder & Notification
 - [ ] Manager can receive email and/or in app notification about task status update by team member
-- [ ] Team member can receive receive email and/or in app notification about changes made by their manager to their tasks
+- [ ] Team member can receive email and/or in app notification about changes made by their manager to their tasks
