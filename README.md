@@ -23,7 +23,7 @@ With TaskFlow, managing tasks becomes a breeze. Its user-friendly interface requ
 
 ## **Entity Diagram Relationship**
 
-![ERD TASKFLOW](ERD%20Taskflow.svg)
+![ERD TASKFLOW](ERD%20TASKFLOW.svg)
 
 ### User Authentication
 - [x] Manager can create an account and log in/ out of the manager’s app
