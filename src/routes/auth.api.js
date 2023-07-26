@@ -3,6 +3,7 @@ const router = express.Router();
 const validators = require("../middlewares/validators");
 const { body } = require("express-validator");
 const authController = require("../controllers/auth.controller");
+const permission = require("../middlewares/permission");
 
 /**
  * @route POST /auth/login
@@ -23,7 +24,7 @@ router.post(
  * @description Manager send invitation to employee's email
  * @access Manager
  */
-router.post("/invitation", authController.sendInvitation);
+router.post("/invitation", permission.managerCheck, authController.sendInvitation);
 
 /**
  * @route POST /auth/setup-account
