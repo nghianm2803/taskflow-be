@@ -21,7 +21,7 @@ projectController.getProjects = catchAsync(async (req, res, next) => {
   let { page, limit, ...filter } = { ...req.query };
 
   page = parseInt(page) || 1;
-  limit = parseInt(limit) || 10;
+  limit = parseInt(limit) || 5;
   const filterConditions = [{ isDeleted: false }];
   if (filter.name) {
     filterConditions.push({

@@ -365,7 +365,7 @@ taskController.editTask = catchAsync(async (req, res, next) => {
   }
 
   // Retrieve the assigned user ID of the task
-  const assignedUserId = task.assignTo._id.toString();
+  const assignedUserId = task.assignTo?._id?.toString();
   if (loggedInUserRole !== "Manager" && loggedInUserId !== assignedUserId) {
     throw new AppError(403, "You can only edit tasks assigned to you", "Update Task Error");
   }
