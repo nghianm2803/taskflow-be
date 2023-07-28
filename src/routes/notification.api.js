@@ -6,7 +6,6 @@ const authentication = require("../middlewares/authentication");
 /**
 @route GET /notifications
 @description get all the notification with current user
-@body
 @access Login required
 */
 
@@ -15,7 +14,6 @@ router.get("/", authentication.loginRequired, notificationController.getAllNotif
 /**
 @route PUT /notifications
 @description Read all notifications
-@body
 @access Login required
 */
 
@@ -29,5 +27,13 @@ router.put("/", authentication.loginRequired, notificationController.readAllNoti
 */
 
 router.put("/:notificationId", authentication.loginRequired, notificationController.readNotification);
+
+/**
+@route GET /new
+@description update notification as read
+@access Login required
+*/
+
+router.get("/new", authentication.loginRequired, notificationController.getNewNotifications);
 
 module.exports = router;

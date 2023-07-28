@@ -69,4 +69,16 @@ notificationController.readNotification = catchAsync(async (req, res, next) => {
   return sendResponse(res, 200, true, notification, null, "Mark Read Notification Successful");
 });
 
+notificationController.getNewNotifications = catchAsync(async (req, res, next) => {
+  const currentUserId = req.userId;
+
+  const newNotifications = await Notification.find({
+    to: currentUserId,
+    read: false,
+  });
+  const count = newNotifications.length;
+
+  return sendResponse(res, 200, true, { count, newNotifications }, null, "Get New Notifications Successful");
+});
+
 module.exports = notificationController;
