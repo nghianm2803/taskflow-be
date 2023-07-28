@@ -14,7 +14,7 @@ const permission = require("../middlewares/permission");
 router.get("/", authMiddleware.loginRequired, taskController.getTasks);
 
 /**
- * @route GET /tasks
+ * @route GET /mytasks
  * @description Get all tasks of current user logged-in
  * @access Login
  */
@@ -22,7 +22,7 @@ router.get("/mytasks", authMiddleware.loginRequired, taskController.getTasksOfCu
 
 /**
  * @route GET /tasks/:taskId
- * @description Get task by id
+ * @description Get a single task by id
  * @access Login
  */
 router.get(
@@ -35,7 +35,8 @@ router.get(
 /**
  * @route POST api/tasks
  * @description Create a new task
- * @access private, Manager
+ * @body
+ * @access Manager
  */
 router.post(
   "/",
@@ -56,6 +57,7 @@ router.post(
 /**
  * @route PUT /tasks/:taskId
  * @description Update a task by id
+ * @body
  * @access Login required
  */
 router.put(
@@ -75,7 +77,7 @@ router.put(
 /**
  * @route DELETE /tasks/:taskId
  * @description Delete a task by id
- * @access private, manager
+ * @access Manager
  */
 router.delete(
   "/:taskId",

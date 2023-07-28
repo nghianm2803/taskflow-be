@@ -25,7 +25,7 @@ router.post(
 /**
  * @route GET /projects
  * @description User view all projects
- * @access Login
+ * @access Login required
  */
 router.get("/", authMiddleware.loginRequired, projectController.getProjects);
 
@@ -43,7 +43,7 @@ router.get(
 
 /**
  * @route PUT /projects/:projectId
- * @description  Manager update a project
+ * @description Manager update a project
  * @access Manager
  */
 router.put(

@@ -3,6 +3,8 @@ const Task = require("../models/Task");
 const User = require("../models/User");
 const Project = require("../models/Project");
 const Comment = require("../models/Comment");
+const Notification = require("../models/Notification");
+
 const taskController = {};
 
 // Get a list of tasks
@@ -329,7 +331,15 @@ taskController.assignTask = catchAsync(async (req, res, next) => {
       user.tasksList.push(updatedTask._id.toString());
       await user.save();
 
-      return sendResponse(res, 200, true, null, null, "Task assigned successfully");
+      // Create the notification
+      const notification = await Notification.create({
+        recipient: userId,
+        type: "Task",
+        message: `You are assigned to ${task.name}`,
+        taskId: taskId,
+      });
+
+      return sendResponse(res, 200, true, notification, null, "Task assigned successfully");
     }
   } else if (loggedInUserRole === "Employee") {
     // Employee can only assign task to themselves if task is unassigned
@@ -346,7 +356,15 @@ taskController.assignTask = catchAsync(async (req, res, next) => {
     user.tasksList.push(updatedTask._id.toString());
     await user.save();
 
-    return sendResponse(res, 200, true, null, null, "Task assigned successfully");
+    // Create the notification
+    const notification = await Notification.create({
+      recipient: userId,
+      type: "Task",
+      message: `You are assigned to ${task.name}`,
+      taskId: taskId,
+    });
+
+    return sendResponse(res, 200, true, { notification }, null, "Task assigned successfully");
   }
 });
 
