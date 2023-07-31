@@ -73,7 +73,7 @@ notificationController.getNewNotifications = catchAsync(async (req, res, next) =
   const currentUserId = req.userId;
 
   const newNotifications = await Notification.find({
-    to: currentUserId,
+    recipient: currentUserId,
     read: false,
   });
   const count = newNotifications.length;
