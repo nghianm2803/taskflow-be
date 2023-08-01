@@ -331,15 +331,17 @@ taskController.assignTask = catchAsync(async (req, res, next) => {
       user.tasksList.push(updatedTask._id.toString());
       await user.save();
 
-      // Create the notification
-      const notification = await Notification.create({
-        recipient: userId,
-        type: "Task",
-        message: `You are assigned to ${task.name}`,
-        taskId: taskId,
-      });
-
-      return sendResponse(res, 200, true, notification, null, "Task assigned successfully");
+      // Create the notification only when a manager assigns to an employee
+      if (user.role === "Employee") {
+        const notification = await Notification.create({
+          recipient: userId,
+          type: "Task",
+          message: `You are assigned to ${task.name}`,
+          taskId: taskId,
+        });
+        return sendResponse(res, 200, true, notification, null, "Send notification to assignee successfully");
+      }
+      return sendResponse(res, 200, true, null, null, "Task assigned successfully");
     }
   } else if (loggedInUserRole === "Employee") {
     // Employee can only assign task to themselves if task is unassigned
@@ -356,15 +358,7 @@ taskController.assignTask = catchAsync(async (req, res, next) => {
     user.tasksList.push(updatedTask._id.toString());
     await user.save();
 
-    // Create the notification
-    const notification = await Notification.create({
-      recipient: userId,
-      type: "Task",
-      message: `You are assigned to ${task.name}`,
-      taskId: taskId,
-    });
-
-    return sendResponse(res, 200, true, { notification }, null, "Task assigned successfully");
+    return sendResponse(res, 200, true, null, null, "Task assigned successfully");
   }
 });
 
