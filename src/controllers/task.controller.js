@@ -27,7 +27,7 @@ taskController.getTasks = catchAsync(async (req, res, next) => {
 
   // Filter search by status
   const status = req.query.status;
-  if (status && ["Pending", "Doing", "Review", "Done"].includes(status)) {
+  if (status && ["Pending", "Working", "Review", "Done"].includes(status)) {
     filterConditions.push({
       status: status,
     });
