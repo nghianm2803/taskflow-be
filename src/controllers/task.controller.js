@@ -273,7 +273,6 @@ taskController.addToProjects = catchAsync(async (req, res, next) => {
 
   // Find the project by projectId
   const project = await Project.findById(projectId);
-  console.log(project);
   if (!project) {
     throw new AppError(404, "Not Found", "Project not found");
   }

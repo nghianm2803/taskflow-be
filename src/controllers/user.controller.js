@@ -89,7 +89,6 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
   const userId = req.params.id;
   let { password } = req.body;
 
-  // console.log("Compare:", currentUserId, "vs", userId);
   if (currentUserId !== userId) throw new AppError(400, "Permission required", "Update User Error");
 
   const user = await User.findById(userId);

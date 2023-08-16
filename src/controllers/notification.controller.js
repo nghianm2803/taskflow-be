@@ -19,9 +19,7 @@ notificationController.getAllNotifications = catchAsync(async (req, res, next) =
     .limit(limit);
 
   const count = await Notification.countDocuments({ recipient: currentUserId });
-  console.log("count", count);
   const totalPage = Math.ceil(count / limit);
-  console.log("totalPage", totalPage);
 
   if (!notifications) {
     throw new AppError(400, "Notifications not found", "Get notification error");
