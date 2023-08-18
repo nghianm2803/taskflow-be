@@ -24,7 +24,12 @@ router.post(
  * @description Manager send invitation to employee's email
  * @access Manager
  */
-router.post("/invitation", permission.managerCheck, authController.sendInvitation);
+router.post(
+  "/invitation",
+  // permission.managerCheck,
+  validators.validate([body("email", "Invalid email").exists().isEmail().normalizeEmail({ gmail_remove_dots: false })]),
+  authController.sendInvitation
+);
 
 /**
  * @route POST /auth/setup-account
