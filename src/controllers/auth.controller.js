@@ -99,7 +99,7 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
   const resetToken = user.getResetPasswordToken();
   await user.save();
 
-  const resetUrl = `${req.protocol}://localhost:3000/password-reset/${resetToken}`;
+  const resetUrl = `${req.protocol}://localhost:3000/reset-password?resetToken=${resetToken}`;
 
   const message = `
   <html>

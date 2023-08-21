@@ -49,12 +49,12 @@ router.post(
 );
 
 /**
- * @route PUT /auth/reset-password/:resetToken
+ * @route PUT /auth/reset-password
  * @description User reset password
  * @access Public
  */
 router.put(
-  "/reset-password/:resetToken",
+  "/reset-password",
   validators.validate([body("password", "Invalid password").exists().notEmpty()]),
   authController.resetPassword
 );
