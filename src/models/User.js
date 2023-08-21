@@ -19,6 +19,8 @@ const UserSchema = Schema(
     avatar: { type: String, required: false, default: "" },
     tasksList: [{ type: mongoose.SchemaTypes.ObjectId, ref: "Task" }],
     isDeleted: { type: Boolean, default: false, required: true },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
   },
   {
     timestamps: true,
@@ -40,9 +42,17 @@ UserSchema.methods.generateToken = async function () {
 };
 
 UserSchema.statics.generateInvitationToken = function () {
-  const buffer = crypto.randomBytes(32);
-  const invitationToken = buffer.toString("hex");
+  const invitationToken = crypto.randomBytes(32).toString("hex");
   return invitationToken;
+};
+
+UserSchema.methods.getResetPasswordToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+  this.resetPasswordExpire = Date.now() + 10 * (60 * 1000);
+
+  return resetToken;
 };
 
 //Create and export model

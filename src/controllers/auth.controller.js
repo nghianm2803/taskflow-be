@@ -3,6 +3,8 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const authController = {};
 const mailgun = require("mailgun-js");
+const sendEmail = require("../helpers/sendEmail");
+const crypto = require("crypto");
 
 // Configure your Mailgun credentials
 const mailgunConfig = {
@@ -102,6 +104,66 @@ authController.setupAccount = catchAsync(async (req, res, next) => {
   const accessToken = await user.generateToken();
 
   sendResponse(res, 200, true, { user, accessToken }, null, "Setup Account Successful");
+});
+
+authController.forgotPassword = catchAsync(async (req, res, next) => {
+  const { email } = req.body;
+
+  // Check if the user already exists with the given email
+  const user = await User.findOne({ email });
+  if (!user) {
+    return next(new AppError(400, "User do not exists", "Send Email Error"));
+  }
+
+  const resetToken = user.getResetPasswordToken();
+  await user.save();
+
+  const resetUrl = `${req.protocol}://localhost:3000/password-reset/${resetToken}`;
+
+  const message = ` <html>
+  <head>
+      <title>Invitation to Taskflow</title>
+  </head>
+  <body>
+      <div>
+          <h2>You have requested a password reset on Taskflow</h2>
+          <p>Please click the following link to reset your password: <a href="${resetUrl}" target="_blank">Reset Password</a></p>
+      </div>
+  </body>
+  </html>`;
+
+  await sendEmail({
+    to: user.email,
+    subject: "Password Reset Request",
+    text: message,
+  });
+
+  // Return the response
+  return res.status(200).json({
+    success: true,
+    message: "Password Reset Request sent successfully",
+    data: message,
+  });
+});
+
+authController.resetPassword = catchAsync(async (req, res, next) => {
+  const resetPasswordToken = crypto.createHash("sha256").update(req.params.resetToken).digest("hex");
+
+  const user = await User.findOne({ resetPasswordToken, resetPasswordExpire: { $gt: Date.now() } });
+
+  if (!user) return next(new AppError(400, "Invalid reset token", "Reset Password Error"));
+
+  // Hash the new password
+  const salt = await bcrypt.genSalt(10);
+  const newPassword = await bcrypt.hash(req.body.password, salt);
+
+  user.password = newPassword;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+
+  sendResponse(res, 200, true, { user }, null, "Reset Password Successful");
 });
 
 module.exports = authController;

@@ -3,7 +3,6 @@ const router = express.Router();
 const validators = require("../middlewares/validators");
 const { body } = require("express-validator");
 const authController = require("../controllers/auth.controller");
-const permission = require("../middlewares/permission");
 
 /**
  * @route POST /auth/login
@@ -37,6 +36,28 @@ router.post(
  * @access Public
  */
 router.post("/setup-account", authController.setupAccount);
+
+/**
+ * @route POST /auth/forget-password
+ * @description User send reset password request to email
+ * @access Public
+ */
+router.post(
+  "/forget-password",
+  validators.validate([body("email", "Invalid email").exists().isEmail().normalizeEmail({ gmail_remove_dots: false })]),
+  authController.forgotPassword
+);
+
+/**
+ * @route PUT /auth/reset-password/:resetToken
+ * @description User reset password
+ * @access Public
+ */
+router.put(
+  "/reset-password/:resetToken",
+  validators.validate([body("password", "Invalid password").exists().notEmpty()]),
+  authController.resetPassword
+);
 
 /**
  * @route POST /auth/login/facebook
