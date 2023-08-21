@@ -129,7 +129,7 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
 });
 
 authController.resetPassword = catchAsync(async (req, res, next) => {
-  const resetPasswordToken = crypto.createHash("sha256").update(req.params.resetToken).digest("hex");
+  const resetPasswordToken = crypto.createHash("sha256").update(req.query.resetToken).digest("hex");
 
   const user = await User.findOne({ resetPasswordToken, resetPasswordExpire: { $gt: Date.now() } });
 
