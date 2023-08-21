@@ -2,15 +2,8 @@ const { AppError, catchAsync, sendResponse } = require("../helpers/utils");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const authController = {};
-const mailgun = require("mailgun-js");
 const sendEmail = require("../helpers/sendEmail");
 const crypto = require("crypto");
-
-// Configure your Mailgun credentials
-const mailgunConfig = {
-  apiKey: process.env.MAILGUN_API_KEY,
-  domain: process.env.MAILGUN_DOMAIN,
-};
 
 authController.loginWithEmail = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
@@ -40,14 +33,8 @@ authController.sendInvitation = catchAsync(async (req, res, next) => {
   // http://localhost:3000/setup-account?token=${invitationToken}
   const invitationLink = `${req.protocol}://localhost:3000/setup-account?token=${invitationToken}`;
 
-  // Send the invitation email to the user's email address
-  const mailgunClient = mailgun(mailgunConfig);
-  const emailData = {
-    from: "nghianm2803@gmail.com",
-    to: email,
-    subject: "Invitation to join the team",
-    html: `
-    <html>
+  const message = `
+  <html>
     <head>
         <title>Invitation to Taskflow</title>
     </head>
@@ -57,28 +44,22 @@ authController.sendInvitation = catchAsync(async (req, res, next) => {
             <p>Please click the following link to set up your account: <a href="${invitationLink}" target="_blank">Set Up Account</a></p>
         </div>
     </body>
-    </html>
-  `,
-  };
+  </html>`;
 
-  mailgunClient.messages().send(emailData, (error, body) => {
-    if (error) {
-      console.error("Error sending email:", error);
-      return next(new AppError(500, "Failed to send invitation email", "Send Invitation Error"));
-    } else {
-      console.log("Email sent successfully:", body);
-    }
+  await sendEmail({
+    to: email,
+    subject: "Invitation to join the team",
+    text: message,
   });
 
   // Return the response
   return res.status(200).json({
     success: true,
     message: "Invitation email sent successfully",
-    data: emailData,
+    data: message,
   });
 });
 
-// Endpoint employee setup account
 authController.setupAccount = catchAsync(async (req, res, next) => {
   const { token } = req.query;
   let { name, email, password } = req.body;
@@ -120,16 +101,17 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
 
   const resetUrl = `${req.protocol}://localhost:3000/password-reset/${resetToken}`;
 
-  const message = ` <html>
-  <head>
-      <title>Invitation to Taskflow</title>
-  </head>
-  <body>
-      <div>
-          <h2>You have requested a password reset on Taskflow</h2>
-          <p>Please click the following link to reset your password: <a href="${resetUrl}" target="_blank">Reset Password</a></p>
-      </div>
-  </body>
+  const message = `
+  <html>
+    <head>
+        <title>Password Reset Request</title>
+    </head>
+    <body>
+        <div>
+            <h2>You have requested a password reset on Taskflow</h2>
+            <p>Please click the following link to reset your password: <a href="${resetUrl}" target="_blank">Reset Password</a></p>
+        </div>
+    </body>
   </html>`;
 
   await sendEmail({

@@ -19,7 +19,7 @@ const sendEmail = (options) => {
   mailgunClient.messages().send(emailData, (error, body) => {
     if (error) {
       console.error("Error sending email:", error);
-      return next(new AppError(500, "Failed to send invitation email", "Send Invitation Error"));
+      return next(new AppError(500, "Failed to send email", "Send Email Error"));
     } else {
       console.log("Email sent successfully:", body);
     }
