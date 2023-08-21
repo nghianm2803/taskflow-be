@@ -31,7 +31,8 @@ authController.sendInvitation = catchAsync(async (req, res, next) => {
 
   // Construct the invitation link with the token
   // http://localhost:3000/setup-account?token=${invitationToken}
-  const invitationLink = `${req.protocol}://localhost:3000/setup-account?token=${invitationToken}`;
+  // const invitationLink = `${req.protocol}://localhost:3000/setup-account?token=${invitationToken}`;
+  const invitationLink = `https://taskflow-doo.netlify.app/setup-account?token=${invitationToken}`;
 
   const message = `
   <html>
@@ -99,7 +100,8 @@ authController.forgotPassword = catchAsync(async (req, res, next) => {
   const resetToken = user.getResetPasswordToken();
   await user.save();
 
-  const resetUrl = `${req.protocol}://localhost:3000/reset-password?resetToken=${resetToken}`;
+  // const resetUrl = `${req.protocol}://localhost:3000/reset-password?resetToken=${resetToken}`;
+  const resetUrl = `https://taskflow-doo.netlify.app/reset-password?resetToken=${resetToken}`;
 
   const message = `
   <html>
