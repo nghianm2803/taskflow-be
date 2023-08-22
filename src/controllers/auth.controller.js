@@ -150,21 +150,4 @@ authController.resetPassword = catchAsync(async (req, res, next) => {
   sendResponse(res, 200, true, { user }, null, "Reset Password Successful");
 });
 
-authController.loginWithFacebookOrGoogle = catchAsync(async (req, res, next) => {
-  console.log("hello login with facebook or google");
-  let user = req.user;
-
-  if (!user) return next(new AppError(400, "User doesn't exist", "Login Error"));
-
-  user = await User.findByIdAndUpdate(
-    user._id,
-    { avatar: user.avatar }, // I want to get recent avatar from avatar picture from facebook
-    { new: true }
-  );
-
-  const accessToken = await user.generateToken();
-
-  sendResponse(res, 200, true, { user, accessToken }, null, "Login Successful");
-});
-
 module.exports = authController;
