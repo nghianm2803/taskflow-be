@@ -3,6 +3,7 @@ const router = express.Router();
 const validators = require("../middlewares/validators");
 const { body } = require("express-validator");
 const authController = require("../controllers/auth.controller");
+const passport = require("passport");
 
 /**
  * @route POST /auth/login
@@ -39,7 +40,7 @@ router.post("/setup-account", authController.setupAccount);
 
 /**
  * @route POST /auth/forget-password
- * @description User send reset password request to email
+ * @description User send reset password request to user's email
  * @access Public
  */
 router.post(
@@ -60,15 +61,25 @@ router.put(
 );
 
 /**
- * @route POST /auth/login/facebook
- * @description Login with facebook
+ * @route POST auth/login/facebook
+ * @description Login with Facebook
  * @access Public
  */
+router.post(
+  "/login/facebook",
+  passport.authenticate("facebook-token", { session: false }),
+  authController.loginWithFacebookOrGoogle
+);
 
 /**
- * @route POST /auth/login/google
- * @description Login with google
+ * @route POST auth/login/google
+ * @description Login with Google
  * @access Public
  */
+router.post(
+  "/login/google",
+  passport.authenticate("google-token", { session: false }),
+  authController.loginWithFacebookOrGoogle
+);
 
 module.exports = router;

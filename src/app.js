@@ -1,5 +1,8 @@
 const express = require("express");
 require("dotenv/config");
+const passport = require("passport");
+require("./helpers/passport.helper");
+const session = require("express-session");
 
 const path = require("path");
 const cookieParser = require("cookie-parser");
@@ -11,11 +14,24 @@ const indexRouter = require("./routes/index");
 
 const app = express();
 
+
+// Use express-session middleware
+app.use(
+  session({
+    secret: "mysecretkey", // A secret key for session encryption (store this securely)
+    resave: false, // Don't save session data if not modified
+    saveUninitialized: true, // Save uninitialized sessions (e.g., new sessions)
+    cookie: { secure: false }, // You can configure other options like cookie settings here
+  })
+);
+
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(cors());
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
